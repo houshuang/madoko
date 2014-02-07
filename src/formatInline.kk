@@ -108,7 +108,7 @@ public function inlineContext( fmt : formatter,
                                highlight : bool = True ) : inlineContext
 {
   InlineContext( inlineGrammar(fmt,bench), dict(), dict(), dict(), dict(),
-                 metadata, mathinfos, 
+                 metadata, mathinfos, dict(),
                  citestyle, sanitize, bench, verbose, mathStatic, highlight,
                  fmt.pick(fmtHtmlCmd,fmtTexCmd), 
                  fmt.pick(fmtHtmlEscape,fmtTexEscape), 
@@ -136,14 +136,17 @@ function inlineBreak( cap : matched, context ) {
 
 function inlineEntity( cap : matched, context : inlineContext ) : string {
   key = cap.groups[1]
-  if (key.startsWith("#")) 
-   then context.fmtText(cap.matched) 
-   else {
-    txt = expandKeyName(key,context.labels,context.metadata)
-    if (txt==cap.matched) 
-     then context.fmtText(txt)
-     else context.formatInline(txt)
-  }
+  if (key.startsWith("#")) // numeric glyph
+   then context.fmtText(cap.matched)   
+   else match(context.boxes[key.normalizeId]) {
+          Just(content) -> content 
+          Nothing -> {   
+            txt = expandKeyName(key,context.labels,context.metadata)
+            if (txt==cap.matched) 
+             then context.fmtText(txt)
+             else context.formatInline(txt)
+          }
+        }
 } 
 
 function inlineNormal( cap : matched, context : inlineContext ) : string {

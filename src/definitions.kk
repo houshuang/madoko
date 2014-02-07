@@ -26,7 +26,7 @@ public function parseBody( fcontext : formatContext,
                            metadata : metadata, 
                            tocDepth : int,
                            secBase : int,
-                           secDepth : int ) :  div (list<block>,formatContext)
+                           secDepth : int ) :  div (list<block>,dict<block>,formatContext)
 {
   parseDefinitions(fcontext, [Div([],"notag".parseAttrs("body",src))], 
                    metadata,tocDepth,secBase,secDepth)
@@ -40,7 +40,7 @@ public function parseDefinitions(
                      metadata : metadata, 
                      tocDepth : int = 0,
                      secBase : int = 1,
-                     secDepth : int = 6 ) :  div (list<block>,formatContext)
+                     secDepth : int = 6 ) :  div (list<block>,dict<block>,formatContext)
 {
   if (fcontext.inlineContext.bench) 
     then parseDefinitionsBench(fcontext,blocks)
@@ -50,7 +50,7 @@ public function parseDefinitions(
 // Fast version for benchmarking
 function parseDefinitionsBench( 
                      fcontext : formatContext,
-                     blocks : list<block> ) :  div (list<block>,formatContext)
+                     blocks : list<block> ) :  div (list<block>,dict<block>,formatContext)
 {
   val links  = mdict()
 
@@ -63,7 +63,7 @@ function parseDefinitionsBench(
     }
   }
 
-  (blocks, fcontext( fcontext.inlineContext.copy( links=links.freeze ), dict(), Empty)  )
+  (blocks, dict(), fcontext( fcontext.inlineContext.copy( links=links.freeze ), dict(), Empty)  )
 }
 
 
@@ -74,13 +74,14 @@ function parseDefinitionsFull(
                      mdata : metadata,
                      tocDepth : int = 0,
                      secBase : int,
-                     secDepth : int ) :  div (list<block>,formatContext)
+                     secDepth : int ) :  div (list<block>,dict<block>,formatContext)
 {
   val counters = mdict()
   val nested   = mdict()
   val labels   = mdict()
   val links    = mdict()
   val footnotes = mdict()
+  val boxes    = mdict()
   var footnoteCount := 0
   var footnoteItems := Nil
   var tocs := mdict()
@@ -163,8 +164,8 @@ function parseDefinitionsFull(
       }
       DefFootnote(id,content) -> {
         footnoteCount := footnoteCount+1
-        ncontent = content.mapBlocks(parseDefBlock)
-        footnotes[id] := Footnote(footnoteCount.show, fun(ictx){ formatBlocks(fcontext(inlineContext=ictx),ncontent) })
+        ncontent = content.mapBlocks(boxes,parseDefBlock)
+        footnotes[id] := Footnote(footnoteCount.show, fun(ictx){ formatBlocks(fcontext(inlineContext=ictx),ncontent,dict()) })
         footnoteItems := Cons(Item(content,Attrs(name="fn-" + id)),footnoteItems)        
         attrsNone
       }
@@ -191,7 +192,7 @@ function parseDefinitionsFull(
     attrs.process( previousIsPar, block )
   }
   
-  newblocks     = blocks.mapBlocks(parseDefBlock)
+  newblocks     = blocks.mapBlocks(boxes,parseDefBlock)
   labelsDict    = labels.freeze()
 
   tocBlocks     = //if (tocDepth <= 0) then Empty else createToc(headings.reverse)
@@ -204,7 +205,7 @@ function parseDefinitionsFull(
 
   secblocks = fblocks.sections(secInit(secBase=secBase,secMax=secDepth,secDefaults=fun(a){ defaultAttrs.matchRules("section",a) }))
 
-  (secblocks,                   
+  (secblocks, boxes.freeze,
    fcontext( fcontext.inlineContext.copy( links=links.freeze, labels=labelsDict, 
                                           footnotes=footnotes.freeze, defaults=defaultAttrs ),
               tocBlocks, footnoteBlock )  )
@@ -220,7 +221,7 @@ struct secinfo(
 val secInit = Secinfo(1,6,1,id)
 val secNone = Secinfo(1,0,1,id)
 
-function mapBlocks( blocks : list<block>, 
+function mapBlocks( blocks : list<block>, boxes : mdict<h,block>,
                     action : (bool,block) -> <st<h>,div|e> block  ) : <st<h>,div|e> list<block> {
   var previousIsPar := False
   blocks.map fun(block) {
@@ -235,16 +236,22 @@ function mapBlocks( blocks : list<block>,
     }
     match(nblock) {
       Div(content,xs) -> {
-        ncontent = match(content.mapBlocks(action)) {
+        ncontent = match(content.mapBlocks(boxes,action)) {
           Cons(Para(txt,attrs),rest) | xs.tight
             -> Cons(Line(txt,False,attrs),rest)
           other -> other
         }
-        Div(ncontent,xs)
+        if (xs.elem=="box") {
+          boxes[xs.name] := Div(ncontent,xs)
+          Empty
+        }
+        else {
+          Div(ncontent,xs)
+        }
       }
-      Quote(content,xs)    -> Quote(content.mapBlocks(action),xs)
-      List(tag,content,xs) -> List(tag,content.mapBlocks(action),xs)
-      Item(content,xs)     -> Item(content.mapBlocks(action),xs)
+      Quote(content,xs)    -> Quote(content.mapBlocks(boxes,action),xs)
+      List(tag,content,xs) -> List(tag,content.mapBlocks(boxes,action),xs)
+      Item(content,xs)     -> Item(content.mapBlocks(boxes,action),xs)
       _ -> nblock
     }
   }
@@ -257,18 +264,18 @@ function setAttrs( block : block, xs : attrs, fcontext : formatContext ) : block
     Para( text )        -> Para(xs.transformText(text,dict(),fcontext.inlineContext.metadata),xs)
     Heading(depth,text) -> Heading(depth,xs.transformText(text,dict(),fcontext.inlineContext.metadata),xs)
     Table(h,cattrs,cells) -> Table(h,cattrs,cells,xs)
-    Div( content  )     -> transformDiv(content, xs, fcontext )
+    Div( content  )     -> transformDiv(content, xs, fcontext)
     Quote( content )    -> Quote(content, xs) 
     Code( text, lang)   -> {
       if (lang=="" && !(xs.input.isPre))
-        then transformDiv([Source(text)], xs(source=text,elem="pre"), fcontext )
+        then transformDiv([Source(text)], xs(source=text,elem="pre"), fcontext)
         else Code(xs.transformText(text,dict(),fcontext.inlineContext.metadata),lang,xs)  
     }
     _                   -> block
   }
 } 
 
-function transformDiv( blocks : list<block>, attrs : attrs, fcontext : formatContext )  : block {
+function transformDiv( blocks : list<block>, attrs : attrs, fcontext : formatContext)  :  block {
   if (attrs.hasKey("display").maybe("",id) == "none") return Empty
   //if (blocks.isCons) return Div(blocks,attrs) // for example, inserted sections
   citestyle = fcontext.inlineContext.citestyle
@@ -281,7 +288,9 @@ function transformDiv( blocks : list<block>, attrs : attrs, fcontext : formatCon
     Markdown(monly) -> {
       match(monly) {
         Just(mfmt)  | !(mfmt == fcontext.fmt) -> Empty
-        _ -> Div(txt.parseBlocks(citestyle),attrs)
+        _ -> {
+          Div(txt.parseBlocks(citestyle),attrs)
+        }
       }
     }
     input -> {

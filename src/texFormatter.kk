@@ -228,6 +228,13 @@ function fmtLine( lines : list<line>, row : row ) : string
   line1 + line2
 }
 
+function texTrim( s : string ) : string
+{
+  s.replace(rxTrim,"$1")
+}
+
+val rxTrim = regex(@"^\s*(\S[\s\S]*?)?%*\s*$")
+
 function fmtRow( td : string, row : row, pre : string ) : string {
   /*
   rcolor = match (row.rowAttrs.hasKey("background-color")) {
@@ -235,7 +242,7 @@ function fmtRow( td : string, row : row, pre : string ) : string {
              Just(clr) -> "\\rowcolor" + fmtColorArg(clr)
            }     
   rcolor + */
-  row.cells.map(fun(cell) { fmtCell(td,cell.text.trim,cell.cellAttrs,pre) }).join("&") 
+  row.cells.map(fun(cell) { fmtCell(td,cell.text.texTrim,cell.cellAttrs,pre) }).join("&") 
     + "\\\\\n"
 } 
 

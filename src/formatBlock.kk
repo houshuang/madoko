@@ -78,9 +78,15 @@ function escapeMath( txt : string, fmt : formatter ) : string {
 ---------------------------------------- */
 
 // Format blocks into html and parse and format all inline elements 
-public function formatBlocks( context : formatContext, blocks : list<block> ) : string
+public function formatBlocks( context : formatContext, blocks : list<block>, boxes : dict<block> ) : string
 {
-  unsafeNoDiv{ formatBlocksX(context,blocks) }
+  unsafeNoDiv{ 
+    fboxes = boxes.map( fun(name,block) {
+               context.formatBlock(block)
+             })
+    fcontext = context(inlineContext=context.inlineContext.copy(boxes=fboxes))
+    formatBlocksX(fcontext,blocks) 
+  }
 }
 
 public function formatBlocksX( context : formatContext, blocks : list<block> ) : div string
