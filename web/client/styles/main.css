@@ -1,0 +1,358 @@
+/*---------------------------------------------------------------------------
+  Copyright 2013 Microsoft Corporation.
+ 
+  This is free software; you can redistribute it and/or modify it under the
+  terms of the Apache License, Version 2.0. A copy of the License can be
+  found in the file "license.txt" at the root of this distribution.
+---------------------------------------------------------------------------*/
+
+/*
+notes:
+  When using "calc" we give a non-calc argument first to support browsers
+  that do not support calc expressions.
+*/
+
+html,body,#app {
+  height: 100%;
+  padding: 0pt;
+  margin: 0pt;
+}
+
+#app {
+  padding: 0ex 1ex;
+}
+
+/* panes */
+
+.toppane {
+  text-align: right;
+}
+
+.pane {
+  height: 96%;
+  height: calc(100% - 1.25rem);
+  width: 49%;
+}
+
+.pane.left {
+  width: calc(53% - 0.2rem);
+  transition: width 0.8s;
+}
+.pane.right {
+  width: calc(47% - 0.2rem);
+  transition: width 0.8s;
+}
+
+.pane.wide {  
+  width: 69%;
+  width: calc(70% - 0.125rem);
+}
+.pane.narrow {
+  width: 29%;
+  width: calc(30% - 0.125rem);
+}
+.pane-header {
+  margin-bottom: 0.25rem;
+}
+.pane-content {
+  height: 95%;
+  height: calc(100% - 1.5rem - 6px);    
+  padding: 1px;
+}
+
+.pane.right {
+  float: right;
+}
+.pane.left {
+  float: left;
+}
+
+.pane-header {
+  font-family: "Segoe UI";
+}
+
+.toppane {
+  min-height: 0.8em;
+}
+
+#editor {
+  height: 100%;
+}
+
+.view {
+  height: 100%;
+  width: 100%;
+  border: none;
+  overflow: scroll;
+  background-color: white;
+}
+
+#koka-console-out {
+  overflow: scroll;
+  font-size: 8pt;
+  padding: 0.5rem;
+  transition: height 0.8s;
+  height: 95%;
+  height: calc(100% - 17px);
+}
+
+/* buttons */
+.button, .buttons {
+  padding: 0em 0.2em;
+}
+
+.button:hover {
+  cursor: pointer;
+  background-color: Gainsboro;
+  border-radius: 5px;
+}
+
+.button.disable:hover {
+  background-color: white;
+}
+
+.button:active {
+  background-color: Gray;
+}
+
+#editor-header .buttons {
+  float: right;
+}
+
+#view-header .buttons {
+  float: left;
+}
+
+
+/* menus */
+
+.menu hr {
+  margin-top: 0.5em;
+  margin-bottom: 0.25em;
+}
+
+.menu div {
+  padding: 0.1em 0.2em;
+}
+
+.menu div .icon, .menu div input {
+  display: inline-block;
+  width: 1.75em;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+} 
+
+
+/* Pane headers */
+
+#view-header {
+  max-width: 100%;
+  text-align: right;
+}
+
+#view-header div {
+  text-align: left;
+}
+
+.pane-header img {
+  height: 1em;
+  max-width: 1.5em;
+  vertical-align: middle;
+}
+
+/* File items */
+
+.disable, .file.generated, .file.image {
+  color: #BBB;
+}
+.file.main {
+  font-weight: bold;
+}
+.file.hide {
+  display: none;
+}
+
+.file-size {
+  display: inline-block;
+  float: right;
+  font-size: x-small;
+  padding-top: 0.5em;
+}
+
+/* Generic */
+
+.hide {
+  visibility: hidden;
+}
+
+.boxed {
+  border: 1px solid black !important;
+  border-radius: 5px;
+}
+div.boxed {
+  padding: 1.4px;
+}
+
+/* Editor Header */
+
+#edit-select {
+  width: 50%;
+  padding: 0 1ex;
+  margin-right: 0.25em;
+}
+
+#remote-logo, .menu img {
+  vertical-align: -0.15em;
+}
+
+#rename {
+  width: 8em;
+  color: DimGray;
+}
+
+.notice {
+  font-size: small;
+  color: DimGray;
+}
+
+/* View header */
+
+#view-message {
+  width: 50%;
+  padding: 0 1px;
+  white-space: nowrap;  
+}
+
+#koka-console {
+  height: 20em;
+}
+
+.msg-status {
+}
+.msg-error, .msg-exception {
+  color: red;
+}
+.msg-warning {
+  color: maroon;
+}
+
+.msg-section {
+  border-bottom: 1px dotted Gainsboro;
+  border-radius: 0pt !important;
+  padding-bottom: 0.2em;
+}
+
+.msg-section:hover {
+  background-color: Gainsboro;
+}
+
+
+#status {
+  padding-left: 1ex;
+}
+
+#warning.hide {
+  display: none;
+}
+
+
+/* Monaco token classes */
+
+.monaco-editor .token.code {
+  background-color: #EEE;
+}
+.monaco-editor .token.code.keyword {
+  color: navy;
+}
+.monaco-editor .token.metadata {
+  color: navy;
+}
+.monaco-editor .token.string.escape {
+  color: gray;
+}
+
+.monaco-editor, .monaco-editor .lines-decorations {
+  background-color: #FFFAF4;
+}
+
+.monaco-editor .line-numbers {
+  background-color: Gainsboro;
+}
+
+
+/* Generic Spinner */
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  visibility: hidden;
+}
+
+#sync .spinner {
+  visibility: visible;
+}
+
+.spinner.spin {
+  visibility: visible;
+  -webkit-animation: spinner-rotate 2s infinite linear;
+  animation: spinner-rotate 2s infinite linear;
+  background-color: white;
+}
+
+
+@-webkit-keyframes spinner-rotate {
+  from { -webkit-transform:rotate(0deg); }
+  to   { -webkit-transform:rotate(360deg); }
+}
+@keyframes spinner-rotate {
+  from { transform:rotate(0deg); }
+  to   { transform:rotate(360deg); }
+}
+
+/* Generic Popup */
+
+.popup {
+  position: relative;
+  display: inline-block;
+}
+
+.popup > div {
+  transition: height 0.8s; 
+}
+
+.popup > div {
+  display: none;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  top: 1.25rem;
+  left: 0;
+  background-color: white;
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: 1px;
+}
+
+.popup:hover > div {
+  display: block;
+}
+
+/* Widths of popup content */
+
+#menu-settings-content {
+  width: 17em;
+}
+
+#document-content {
+  width: 12em;
+}
+
+#help-content {
+  width: 21em;
+}
+
+#koka-console {
+  width: 25em;
+  left: -6.5em;
+}
