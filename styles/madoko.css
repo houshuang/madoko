@@ -1,0 +1,408 @@
+/*---------------------------------------------------------------------------
+  Copyright 2013 Microsoft Corporation.
+ 
+  This is free software; you can redistribute it and/or modify it under the
+  terms of the Apache License, Version 2.0. A copy of the License can be
+  found in the file "license.txt" at the root of this distribution.
+---------------------------------------------------------------------------*/
+
+/* ---------------------------------------------------
+   Various settings to display madoko elements correctly.
+   For example, lines in tables or a table of contents.
+
+   All rules use specific madoko classes and never just
+   a generic element. This means one can safely include
+   this CSS into any web page without affecting non-madoko
+   content (as long as the class names are different)
+----------------------------------------------------*/
+
+/* The table of contents */
+.toc>.tocblock .tocblock .tocblock {
+  margin-left: 2.5em;
+}
+
+.toc>.tocblock .tocblock {
+  margin-left: 1.7em;
+}
+
+.toc>.tocblock>.tocitem {
+  font-weight: bold;
+}
+
+.toc {
+  margin-top: 1em;
+}
+
+/* Paragraphs */
+p.para-continue {
+  margin-bottom: 0pt;
+}
+
+.para-block+p {
+  margin-top: 0pt;
+}
+
+ul.para-block, ol.para-block {
+  margin-top: 0pt;
+  margin-bottom: 0pt;
+}
+
+ul.para-end, ol.para-end {
+  margin-bottom: 1em;
+}
+
+/* Local page links do not get an underline unless hovering */
+a.localref {
+  text-decoration: none;
+}
+a.localref:hover {
+  text-decoration: underline;
+}
+
+/* Footnotes */
+.footnotes {
+  font-size: smaller;
+  margin-top: 2em;
+}
+
+.footnotes hr {
+  width: 50%;
+  text-align: left;
+}
+
+.footnote { 
+  margin-left: 1em;
+}
+.footnote-before {
+  margin-left: -1em;
+  width: 1em;
+  display: inline-block;
+}
+
+/* Abstract */
+.abstract>p:before {
+  content: "Abstract. ";
+  font-weight: bold;
+}
+
+.abstract {
+  margin-left: 2.7em;
+  margin-right: 2.7em;
+  font-size: small;
+}
+
+
+/* Alignment */
+.align-center, .align-center>p {
+  text-align: center !important;
+}
+
+.align-center>* {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.align-left, .align-left>p {
+  text-align: left !important;
+}
+
+.align-left>* {
+  margin-left: 0pt !important;
+  margin-right: auto !important;
+}
+
+.align-right, .align-right>p {
+  text-align: right !important;
+}
+
+.align-right>* {
+  margin-left: auto !important;
+  margin-right: 0pt !important;
+}
+
+.align-center>table,
+.align-left>table,
+.align-right>table {
+  text-align: left !important;
+}
+
+
+/* Equations, Figure's etc. */
+.equation-before {
+  float: right;
+}
+
+
+/* Bibliography */
+.bibitem {
+  font-size: smaller;
+}
+
+.bib-numeric .bibitem {
+  margin-left: 3em;
+  text-indent: -3em;
+}
+
+.bibitem-before {
+  display: none;
+}
+
+.bib-numeric .bibitem-before {
+  display: inline-block;
+  width: 3em;
+  text-align: right;
+}
+
+.bibliography {
+}
+
+.bibsearch {
+  font-size: x-small;
+  text-decoration:none;
+  color: black;
+}
+
+/* General */
+.block, .figure, .bibitem, .equation {
+  margin-top: 1ex;
+  margin-bottom: 1ex;
+}
+
+.figure {
+  padding: 0.5em;
+  margin-left: 0pt;
+  margin-right: 0pt;
+}
+
+.hidden {
+  display: none;
+}
+
+hr.madoko, .madoko hr {
+  border: none;
+  border-bottom: black solid 1px;
+  margin-bottom: 0.5ex;
+}
+
+.framed>*:first-child {
+  margin-top: 0pt;
+}
+.framed>*:last-child {
+  margin-bottom: 0pt;
+}
+
+
+/* Title, authors */
+.title {
+  font-size: xx-large;
+  font-weight: bold;
+  margin-bottom: 1ex;
+}
+
+.subtitle {
+  font-size: x-large;
+  margin-bottom: 1ex;
+  margin-top: -1ex;
+}
+
+.titleblock>* {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.titleblock table {
+  width: 80%;
+}
+
+.authorblock .author {
+  display: block;
+  font-size: large;
+}
+
+.authorblock .email {
+  font-family: monospace;
+}
+
+
+
+/* Tables */
+table.madoko {
+  border-collapse: collapse;
+}
+.madoko td, .madoko th {
+  padding: 0ex 0.5ex;
+  margin: 0pt;
+  vertical-align: top;
+}
+
+.madoko .cell-border-left {
+  border-left: 1px solid black;
+}
+.madoko .cell-border-right {
+  border-right: 1px solid black;
+}
+
+
+.madoko thead>tr:first-child>.cell-line,
+.madoko tbody:first-child>tr:first-child>.cell-line {
+  border-top: 1px solid black;
+  border-bottom: none;
+}
+
+.madoko .cell-line, .madoko .cell-double-line {
+  border-bottom: 1px solid black;
+  border-top: none;
+}
+
+.madoko .cell-double-line {
+  border-top: 1px solid black;
+  padding-top: 1.5px !important;
+}
+
+
+/* Math Pre */
+.input-mathpre .MathJax_Display, .input-mathpre .math-display {
+  text-align: left !important;
+}
+
+div.input-mathpre {
+  margin-top: 1.5ex;
+  margin-bottom: 1ex;
+}
+
+
+/*---------------------------------------------------------------------------
+  Default style for syntax highlighting
+---------------------------------------------------------------------------*/
+
+.madoko pre.hljs,
+.hljs-identifier {
+  background-color: white;
+  color: black;
+}
+
+.hljs-comment, .hljs-template_comment, .diff .hljs-header, .hljs-doctype, .hljs-pi, .lisp .hljs-string, .hljs-javadoc {
+  color: green;
+}
+
+.hljs-keyword, .hljs-command, .hljs-winutils, .method, .hljs-addition, .css .hljs-tag, .hljs-request, .hljs-status, .nginx .hljs-title, .lisp .hljs-title  {
+  color: navy;
+}
+
+.hljs-number, .hljs-string, .hljs-tag .hljs-value, .hljs-rules .hljs-value, .hljs-phpdoc, .hljs-regexp, .hljs-hexcolor, .hljs-link_url {
+  color: maroon;
+}
+
+.hljs-title {
+  font-weight: bold;
+}
+
+.hljs-localvars, .hljs-chunk, .hljs-decorator, .hljs-built_in, .hljs-identifier, .vhdl .hljs-literal, .hljs-id, .css .hljs-function {
+  /* nothing */
+}
+
+.hljs-attribute, .hljs-variable, .lisp .hljs-body, .smalltalk .hljs-number, .hljs-constant, .hljs-class .hljs-title, .hljs-parent, .haskell .hljs-type, .hljs-link_reference {
+  color: purple;
+}
+
+.hljs-type {
+  color: teal;
+}
+
+.hljs-typevar {
+  color: teal;
+  font-style: italic;
+}
+
+.hljs-preprocessor, .hljs-preprocessor .hljs-keyword, .hljs-pragma, .hljs-shebang, .hljs-symbol, .hljs-symbol .hljs-string, .diff .hljs-change, .hljs-special, .hljs-attr_selector, .hljs-subst, .hljs-cdata, .clojure .hljs-title, .css .hljs-pseudo, .hljs-header, .hljs-link_label,
+.hljs-escape {
+  color: gray;
+}
+
+.hljs-deletion,.hljs-important {
+  color: red;
+}
+
+.hljs-emphasized {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.hljs-formula, .hljs-meta {
+  background: #EEE;
+}
+
+
+/* ---------------------------------------------------
+   Styling for full documents
+----------------------------------------------------*/
+body.madoko, .madoko-body {
+  padding: 1em 16% 1em 12%;
+  font-family: Cambria,Utopia,"Hoefler Text","Liberation Serif","Times New Roman",serif;
+  -webkit-text-size-adjust: 100%; /* so math displays well on mobile devices */
+}
+
+body.madoko.preview {
+  padding: 0em 5% 0em 5% !important;
+}
+
+.madoko p,
+.madoko li {
+  text-align: justify;
+}
+
+/* style h5 and h6 headers a bit better */
+.madoko h5, .madoko h6 {
+  margin-top: 0.5em;
+  margin-bottom: 0pt;
+  font-size: 100%;
+}
+.madoko h5+p {
+  margin-top: 0.5em;
+}
+.madoko h6+p {
+  margin-top: 0pt;
+}
+
+/* Fix monospace display (see http://code.stephenmorley.org/html-and-css/fixing-browsers-broken-monospace-font-handling/) */
+.madoko pre, .madoko code, .madoko kbd, .madoko samp, .madoko tt, .madoko .monospace {
+  font-family: Consolas,"Andale Mono WT","Andale Mono",Lucida Console,Monaco,monospace,monospace;
+  font-size: 0.85em;
+}
+.madoko pre code {
+  font-size: 0.95em;
+}
+
+/* Code prettify */
+.madoko ol.linenums li {
+  background-color: white;
+  list-style-type: decimal;
+}
+
+/* ---------------------------------------------------
+   Print settings
+----------------------------------------------------*/
+
+@media print {
+  body.madoko {
+    font-size: 10pt;
+  }
+  @page {
+    margin: 1in 1.5in;
+  }
+}
+
+/* ---------------------------------------------------
+   Mobile device settings
+----------------------------------------------------*/
+
+@media only screen and (max-device-width:1024px) {
+  body.madoko {
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+}
