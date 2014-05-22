@@ -26,9 +26,9 @@ function getAccessToken() {
   return _access_token;
 }
 
-function login() {
+function login(dontForce) {
   if (getAccessToken()) return Promise.resolved();
-
+  if (dontForce) return Promise.rejected( new Error("dropbox: not logged in") );
   var url = "https://www.dropbox.com/1/oauth2/authorize?response_type=token&client_id=" + appKey + "&redirect_uri=" + redirectUri;
   var w = window.open(url);
   return new Promise( function(cont) {
@@ -171,8 +171,8 @@ var Dropbox = (function() {
     return Util.combine(self.folder,fname);
   }
 
-  Dropbox.prototype.getWriteAccess = function() {
-    return login();
+  Dropbox.prototype.connect = function(dontForce) {
+    return login(dontForce);
   }
 
   Dropbox.prototype.createSubFolder = function(dirname) {
