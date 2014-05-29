@@ -1,0 +1,495 @@
+/*---------------------------------------------------------------------------
+  Copyright 2013 Microsoft Corporation.
+ 
+  This is free software; you can redistribute it and/or modify it under the
+  terms of the Apache License, Version 2.0. A copy of the License can be
+  found in the file "license.txt" at the root of this distribution.
+---------------------------------------------------------------------------*/
+
+/*
+notes:
+  When using "calc" we give a non-calc argument first to support browsers
+  that do not support calc expressions.
+*/
+
+html,body,#fullapp {
+  height: 100%;
+  padding: 0pt;
+  margin: 0pt;
+}
+
+
+/* Colors */
+#fullapp, .spinner.spin {
+  background-color: white;  
+}
+.output {
+  background-color: white;
+  border-style: solid;
+}
+.header-bar, .output {
+  border-color: silver;
+  border-width: 1px;
+}
+.view {
+  background-color: white;
+}
+
+.theme-dark .app-body {
+  background-color: white;      
+}
+.theme-dark #fullapp,
+.theme-dark .spinner.spin, 
+.theme-dark .output,
+.theme-dark .header-bar  {
+  background-color: #135;
+  border-style: none;
+  color: white;
+}
+.theme-dark .header-bar .popup div {
+  color: black;
+}
+.theme-dark .monaco-editor.vs .clnr {
+  color: #666;
+}
+.theme-dark .menubar>div>img.button:hover,
+.theme-dark .popup:hover,
+.theme-dark .popup>.button:hover,
+.theme-dark .header-bar a:hover,
+.theme-dark .header-bar .button:hover {
+  background-color: #357;
+}
+
+#edit-select-directory {
+  display: none;
+}
+
+/* Application panes */
+#fullapp {
+  padding: 0em 0.25em;
+}
+
+.app-body {
+  height: calc(100% - 3.3em);
+}
+
+.header-bar {
+  height: 1.5rem;
+  margin: 0pt;
+  padding: 0pt;
+  font-family: "Segoe UI";
+}
+
+.app-header.header-bar {
+  padding-top: 0.2rem;
+  padding-bottom: 0.1rem;
+}
+
+.pane {
+  height: 100%;
+  width: 49%;
+  transition: width 1s;
+}
+
+.pane-content {
+  height: 100%;
+}
+
+.view-normal .pane.left {
+  width: calc(53%);
+}
+.view-normal .pane.right {
+  width: calc(47%);
+}
+.view-wide .pane.right, .view-narrow .pane.left {  
+  width: 70%;
+}
+.view-narrow .pane.right, .view-wide .pane.left {
+  width: 30%;
+}
+
+.pane.right {
+  float: right;
+}
+
+.pane.left {
+  float: left;
+}
+
+
+/* header & footer */
+
+.header-bar img {
+  height: 1em;
+  vertical-align: -0.1em;
+}
+
+.header-bar .right {
+  float: right;
+}
+
+#fullapp .header-bar .right img {
+  margin: 0em 0.2em;
+}
+
+.app-footer img {
+  height: 1.4em;
+  vertical-align: -0.2em;
+}
+
+#fullapp .app-footer {
+  font-size: small;
+  text-align: right;
+}
+
+.ms-notice {
+  font-size: x-small;
+}
+
+.app-footer a {
+  color: white;
+  text-decoration: none;
+}
+
+.app-footer #view-message {
+  float: left;
+  text-align: left;
+  margin-left: 0.25em;
+  margin-top: 0.15em;
+  width: 50%;
+}
+
+/* Main elements in panes */
+
+#editor {
+  height: 100%;
+}
+
+.view {
+  height: 100%;
+  width: 100%;
+  border: none;
+  overflow: scroll;
+}
+
+#console-out {
+  overflow: scroll;
+  font-size: 8pt;
+  padding: 0.5rem;
+  transition: height 0.8s;
+  height: calc(100% - 1rem);
+  color: black;
+  white-space: nowrap;  
+}
+
+
+/* buttons */
+.button {
+  padding: 0em 0.2em;
+}
+
+.button:hover {
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: Gainsboro;
+}
+
+.button.disable:hover {
+  background-color: white;
+}
+
+.button:active {
+  background-color: Gray;
+}
+
+
+/* menus */
+
+.menu hr {
+  margin-top: 0.2em;
+  margin-bottom: 0.25em;
+}
+
+.menu div {
+  padding: 0.1em 0em;
+}
+
+.menu div .icon, .menu div input {
+  display: inline-block;
+  width: 1.75em;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+} 
+
+/* File items */
+
+.disable, .file.generated, .file.image {
+  color: #AAA;
+}
+
+#edit-select-header .folder {
+  padding-right: 0.15em;
+}
+
+#edit-select-header .disable {
+  color: #888;
+}
+
+.theme-dark #edit-select-header .disable {
+  color: #BBB;
+}
+
+#edit-select-directory img {
+  float: right;
+}
+
+.file.main {
+  font-weight: bold;
+}
+
+.file.hide {
+  display: none;
+}
+
+.file-size {
+  display: inline-block;
+  float: right;
+  font-size: x-small;
+  padding-top: 0.5em;
+}
+
+
+/* Generic */
+
+.hide {
+  display: none;
+}
+
+.boxed {
+  border: 1px solid black !important;
+}
+
+div.boxed {
+  padding: 1.4px;
+}
+
+
+/* Editor Header */
+#document {
+  margin-right: 0.3em;
+}
+
+#edit-select {
+  width: 40%;
+}
+
+#sync-spinner {
+  float: right;
+  margin-top: 0.2em;  
+}
+
+#save-folder {
+  width: 11em;
+  color: DimGray;
+}
+
+#help .notice {
+  font-size: small;
+  color: DimGray;
+}
+
+#help-content a img {
+  height: 0.5em;
+  margin-right: 0.1em;
+  margin-left: 0.1em;
+  vertical-align: 0.1em;
+}
+
+#help-content>a {
+  display: block;
+  color: black;
+  text-decoration: none;
+}
+
+#help-content>a:hover {
+  background-color: Gainsboro;
+}
+
+
+.msg-error, .msg-exception {
+  color: red;
+}
+.msg-warning {
+  color: maroon;
+}
+
+.msg-section {
+  border-bottom: 1px dotted Gainsboro;
+  border-radius: 0pt !important;
+  padding-bottom: 0.2em;
+}
+
+.msg-section:hover {
+  background-color: Gainsboro;
+}
+
+.msg-time {
+  display: inline-block;
+  float: right;
+  color: #888;
+}
+
+#status {
+  padding-left: 0.5ex;
+}
+
+.menu-label {
+  display: inline-block;
+  width: 3.5em;
+}
+
+.color-box {
+  display:inline-block;
+  border:1px solid black; 
+  height: 0.7em; 
+  width:0.7em; 
+  vertical-align:-0.4em;
+}
+
+
+/* Monaco token classes */
+.xlatex-error-line {
+  background-color: lightblue;
+}
+
+.monaco-editor .glyph-error.outdated {
+  background-color: orange !important;
+}
+
+.xlatex-error {
+  background-color: red;
+  width: 5px !important;
+  left: 2px;
+}
+
+.monaco-editor .token.code {
+  color: purple;
+}
+.monaco-editor .token.code.keyword {
+  color: navy;
+}
+.monaco-editor .token.metadata {
+  color: navy;
+}
+.monaco-editor .token.string.escape {
+  color: gray;
+}
+
+.monaco-editor.vs-dark .token.code {
+  color: #897;
+}
+.monaco-editor.vs-dark .token.code.keyword {
+  color: #B5CEA8;
+}
+.monaco-editor.vs-dark .token.metadata {
+  color: #BD5050;
+}
+.monaco-editor.vs-dark .token.string.escape {
+  color: #CE9178;
+}
+.monaco-editor, .monaco-editor .lines-decorations {
+  background-color: #FFFAF4;
+}
+
+.monaco-editor .line-numbers {
+  background-color: Gainsboro;
+}
+
+
+
+/* Generic Spinner */
+
+.spinner, .gspinner {
+  visibility: hidden;
+}
+
+.spinner.spin, .gspinner.spin {
+  visibility: visible;
+}
+
+.spinner.spin {
+  -webkit-animation: spinner-rotate 2s infinite linear;
+  animation: spinner-rotate 2s infinite linear;
+}
+
+
+@-webkit-keyframes spinner-rotate {
+  from { -webkit-transform:rotate(0deg); }
+  to   { -webkit-transform:rotate(360deg); }
+}
+@keyframes spinner-rotate {
+  from { transform:rotate(0deg); }
+  to   { transform:rotate(360deg); }
+}
+
+
+/* Generic Popup */
+
+.popup {
+  position: relative;
+  display: inline-block;
+}
+
+.popup > div {
+  transition: height 0.8s; 
+}
+
+.popup > div {
+  display: none;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  top: 1.25rem;
+  left: 0;
+  background-color: white;
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: 0.5ex;
+}
+
+.popup:hover > div,
+.popup.hover > div {
+  display: block;
+}
+
+
+/* Widths of popup content */
+#edit-select-content {
+  width: 70%;
+}
+
+
+#help-content,
+#menu-settings-content,
+#document-content {
+  width: 20em;
+}
+
+#help-content,
+#menu-settings-content {
+  left: -18.5em;
+}
+
+#help {
+  margin-right: 0.5em;
+}
+
+#console {
+  width: 100%;
+  top: -20rem;
+  height: 20rem;
+  padding: 0pt;
+}

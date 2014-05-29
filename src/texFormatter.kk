@@ -1,0 +1,440 @@
+/*---------------------------------------------------------------------------
+  Copyright 2013 Microsoft Corporation.
+ 
+  This is free software; you can redistribute it and/or modify it under the
+  terms of the Apache License, Version 2.0. A copy of the License can be
+  found in the file "license.txt" at the root of this distribution.
+---------------------------------------------------------------------------*/
+
+// Formatting of TeX elements (i.e. emphasis, links, etc.)
+module texFormatter
+
+import std/log
+import std/path
+import std/dict
+import std/string
+import std/regex
+import common
+import entity
+import inline
+import options
+import texParser      // for texAccents et al
+import htmlFormatter  // for htmlEscape
+import hilite
+import attributes
+
+public function fmtTexEnv(context : inlineContext, env : string, txt : string, attrs : attrs ) : string {
+  if (env=="") 
+   then texText(txt) 
+   else texEnv(env,txt,attrs)
+}
+
+public function fmtTexCmd(context : inlineContext, cmd : string, txt : string, attrs : attrs ) : string {
+  if (cmd=="") then texText(txt) 
+  elif (cmd=="br") then "\\mdBr\n" 
+  // elif (cmd=="code") then "\\lstinline|" + txt + "|" 
+  else texCmd(cmd,txt,attrs)
+}
+
+public function fmtTexLineInfo( context : inlineContext, lineInfo : string ) : string {
+  "% data-line={" + lineInfo + "}\n"
+}
+
+public function fmtTexEscape( context : inlineContext, txt : string, allowEntity : bool ) : string {
+  //texText(htmlEscape(txt,allowEntity))
+  if (allowEntity)
+   then texText(htmlEscape(txt,allowEntity))
+   else // we use lstlisting with 'mathescape' and escape just $ and |
+        txt.replaceAll(regex(@"\$"),@"$\mbox{\$}$").replaceAll(regex(@"\|"),@"$\mbox{\char124}$")  
+}
+
+public function fmtTexFootnote(context : inlineContext, id : string, fn : footnote ) : string {
+  "\\mdFootnote[id=back-fn-" + id + ",label={" + fn.footnoteNum + "}]{" + ((fn.footnoteContent)(context)) + "}"
+}
+
+public function fmtTexLink( context : inlineContext, isImage : bool, link : link, content : string ) {
+  if (isImage) {
+    texCmd("img",texText(link.href),link.linkattrs)
+  }
+  else {
+    texCmd("a",texText(if (link.href.startsWith("#")) then link.href.substr(1) else link.href),link.linkattrs) +
+      "{" + (if (link.linkattrs.hasClass("tex-tooltip")) then extractText(link.title) else "") + "}" +
+      "{" + content + "}"    
+  }
+}
+
+function extractText( s : string ) : string {
+  s.replaceAll(regxTexCmd," ")
+}
+
+val regxTexCmd = regex(rxTexCmd)
+
+public function fmtTexCodePlain( context : inlineContext, txt : string ) : string 
+{
+  txt.htmlEscape(False).texText.preSpace
+}
+
+public function fmtTexCodeHilite( context : inlineContext, txt : string, lang : string, mode : maybe<hilitemode> ) : (string,maybe<hilitemode>) 
+{
+  match (txt.hilitePartial(lang,mode)) {
+    Nothing -> (fmtTexCodePlain(context,txt),mode)
+    Just((hl,next)) -> (hl.texText.unspan(lang).preSpace, Just(next))
+  }  
+}
+
+public function fmtTexCode( context : inlineContext, env : string, 
+                              txt : string, attrs : attrs ) : string 
+{
+  lang = attrs.hasKey("language").maybe("",id)
+  lattrs = if (lang=="") then attrsNone else Attrs(classes=["language-" + lang],keyvals=[("language",lang)])
+  plain = txt.htmlEscape(False).texText.preSpace
+  content = if (lang=="" || !(context.highlight) || attrs.hasClass("plain")) then plain 
+             else match(txt.hilite(lang)) {
+                    Just(hl) -> hl.texText.unspan(lang).preSpace
+                    Nothing  -> plain
+                  }
+  if (env=="" || env=="code") 
+   then texCmd("code",content,attrs)
+   else texEnv(env,texCmd("code",content,lattrs),attrs)
+}
+
+public function unspan( txt : string, lang : string ) : string {
+  txt.replaceAll(rxEndSpan,"}").replaceAll(rxSpan) fun(cap) {
+    classes=cap.groups[1].toLower.trim.split(rxSpaces).map(fun(cname) {
+      if (cname.startsWith("hljs-")) then cname.substr(5) else cname
+    }).list.filter( fun(cname) { cname != "token" && cname != lang } )
+    cclasses = list(2,2).map( fun(i) { classes.take(i).join(":") }).reverse
+    @"\mdToken{" + (classes + cclasses).join(",") + "}{"
+  }  
+} 
+
+val rxEndSpan = regex(@"{\\textless}/span{\\textgreater}")
+val rxSpan = regex(@"{\\textless}span\s+.*?\bclass=['""]?([^""']+)['""]?[^{]*{\\textgreater}",ignoreCase=True)
+
+public function preSpace( txt : string ) : string {
+  txt.replaceAll(rxIndent,fun(cap){ @"\preindent{" + cap.matched.length.show + "}" })
+     .replaceAll(rxSpaces,fun(cap){ @"\prespace{" + cap.matched.length.show + "}"})
+     .replaceAll("\n|{\\textless}br{\\textgreater}","\\prebr{}\n")
+     .replaceAll("`","{`}")
+}
+val rxIndent = regex(@"^ +",multiLine=True)
+val rxSpaces = regex(@" +")
+
+public function texText( txt : string ) : string {
+  txt.replaceAll(rxSpecial,texSpecial).replaceAll(rxEntity,texEntity)     
+}
+
+val rxEntity  = regex(@"&((?:#[xX]?)?(\w)(\w*));")
+val rxSpecial = regex(@"&#?\w+;|[" + specials.map(fst).join + @"\]")
+val specials = [
+  (@"%", @"\%"),
+  (@"~", @"{\textasciitilde}"),
+  (@"#", @"\#"),
+  (@"&", @"\&"),  // defined by madoko.sty
+  (@"$", @"\$"),
+  (@"{", @"\{"),
+  (@"}", @"\}"),
+  (@"_", @"\_"),
+  (@"^", @"{\textasciicircum}"),
+  (@"|", @"{\textbar}"),
+  (@"<", @"{\textless}"),
+  (@">", @"{\textgreater}"),
+  (@"\",@"{\textbackslash}"),  // must come last, see rxSpecial that appends a "\"
+]
+
+val rxNamedEntity = regex(@"&(\w+);")
+
+function escapeEntity( s : string ) : string {
+  s.replaceAll(rxNamedEntity,"&amp;$1;")
+}
+
+function texSpecial( cap : matched ) : string {
+  match(specials.find(fun(kv){ kv.fst == cap.matched })) {
+    Nothing  -> cap.matched
+    Just(kv) -> kv.snd
+  }
+}
+
+val accents 
+  = texAccents.list.map(fun(te) { (te.snd, te.fst ) }).dict
+
+function texEntity( cap : matched ) {
+  match(accents[cap.groups[3]]) {
+    Just(cmd) -> @"{\" + cmd + "{" + cap.groups[2] + "}}"
+    Nothing   -> entityToTex(cap.groups[1])
+  } 
+}
+
+function texCmd( cmd : string, body : string, attrs : attrs = attrsNone, pre : string = "md" ) : string {
+  "\\" + pre + cmd.normalizeCmd.capitalize + attrs.texAttrsX + "{" + body + "}"
+}
+
+
+public function fmtTexTable( context : inlineContext, head : list<row>, body : list<row>, colattrs : list<attrs>, attrs : attrs ) : string {
+  pre = "md"
+  rows = head + body
+  td = if (attrs.hasClass("columns")) then "column" else "td"
+  table = if (attrs.hasClass("long")) then "LongTable" else "Table"
+  columns = max(1,rows.map(fun(r:row){ r.cells.length }).maximum)
+  colattrsx = (colattrs + list(colattrs.length,columns).map(fun(i){ attrsNone })).take(columns)
+  "\\begin{" + pre + table + "}" + attrs.addClass("block").texAttrsX + 
+      "{" + columns.show + "}" + 
+      "{" + colattrsx.map(fmtColumn).join + "}\n" +
+    head.fmtRows("th",pre) + "\n" +
+    body.fmtRows(td,pre) +
+    "\\end{" + pre + table + "}\n"
+}
+
+type line {
+  Single
+  Double
+  NoLine
+}
+
+val fmtRowLineBreak = "\\morecmidrules\n" // \\\\[-\\mdTablelineskip]\n"
+
+function fmtColorArg( clr : string ) : string {
+  if (clr.startsWith("#")) 
+    then "[HTML]{" + clr.substr(1) + "}"
+    else "{" + clr.substr(0,1).toUpper + clr.substr(1).toLower + "}"
+}
+
+function fmtColumn( colattr : attrs ) : string {
+  "l"
+}
+
+function fmtRows( rows : list<row>, td : string, pre : string ) : string {
+  var lastIsLine := False
+  xrows = rows.map fun(row) {
+    lineRow = row.cells.map(fun(cell) { 
+                if (cell.cellAttrs.hasClass("cell-line")) then Single
+                elif (cell.cellAttrs.hasClass("cell-double-line")) then Double 
+                else NoLine 
+              } )
+    if (!(lineRow.all(isNoLine))) then { 
+      res = (if (lastIsLine) then fmtRowLineBreak else "") + fmtLine(lineRow,row)
+      lastIsLine := True
+      res
+    }
+    else {
+      res = (if (lastIsLine) then "\n" else "") + fmtRow(td,row,pre)
+      lastIsLine := False
+      res
+    }
+  }
+  xrows.join() + (if (lastIsLine) then "\n" else "")
+}
+
+
+function fmtLine( lines : list<line>, row : row ) : string 
+{
+  function width( cattrs : attrs ) {
+    match(cattrs.hasKey("rule-width")) {
+      Just(wd) -> "[" + wd.normalizeVal + "]"
+      Nothing  -> ""
+    }
+  }
+
+  line2 = if (!(lines.any(isDouble))) then "" else {
+    fmtRowLineBreak + 
+     zipWithIndexed(row.cells,lines,fun(i,cell,line) {
+      attrs = cell.cellAttrs
+      if (!(line.isDouble)) then "" 
+       else "\\cmidrule" + width(attrs) + "{" + (i+1).show + "-" + (i+ attrs.lookupKey("column-span","1").parseInt.maybe(1,id)).show + "}" 
+     }).join            
+  }
+  
+  line1 = if (!(lines.any(isNoLine)) && line2=="") then "\\midrule" + width(row.rowAttrs) else {
+    zipWithIndexed(row.cells,lines,fun(i,cell,line) {
+      attrs = cell.cellAttrs
+      if (line.isNoLine) then "" 
+       else "\\cmidrule" + width(attrs) + "{" + (i+1).show + "-" + (i+ attrs.lookupKey("column-span","1").parseInt.maybe(1,id)).show + "}" 
+     }).join
+  }
+  
+  line1 + line2
+}
+
+function fmtRow( td : string, row : row, pre : string ) : string {
+  /*
+  rcolor = match (row.rowAttrs.hasKey("background-color")) {
+             Nothing   -> ""
+             Just(clr) -> "\\rowcolor" + fmtColorArg(clr)
+           }     
+  rcolor + */
+  row.cells.map(fun(cell) { fmtCell(td,cell.text.trim,cell.cellAttrs,pre) }).join("&") 
+    + "\\\\\n"
+} 
+
+
+
+function fmtCell( elem : string, body : string, attrs : attrs, pre : string ) : string {
+  colspan = attrs.lookupKey("column-span","1")
+  align   = match(attrs.hasKey("text-align")) {
+              Just(alignment) -> alignment.substr(0,1)
+              Nothing -> if (elem=="th") then "c" else "l" 
+            }
+  bcolor  = match (attrs.hasKey("background-color")) {
+              Nothing   -> ""
+              Just(clr) -> "{\\cellcolor" + fmtColorArg(clr) + "}"
+            }            
+  fmt     = (if (attrs.hasClass("cell-border-left")) then "|" else "") + align +
+            (if (attrs.hasClass("cell-border-right")) then "|" else "")
+
+  attrsx  = attrs( classes = attrs.classes.filter(fun(c){ c != "cell-border-left" && c != "cell-border-right" && !(c.startsWith("align-"))}),
+                   keyvals = attrs.keyvals.filter(fun(kv){ kv.fst != "column-span" && kv.fst != "background-color" }))
+
+  content = if (elem=="column") 
+             then texEnv(elem,body,attrsx)
+             else texCmd(elem,body,attrsx.addKeyval("display","table-cell")) 
+             
+  if (colspan=="1" && fmt=="l") then content 
+   else "\\multicolumn{" + colspan + "}{" + fmt + "}{" + bcolor + content + "}"
+}
+
+
+
+
+function texAttrsX( attrs : attrs = attrsNone ) : string {
+  if (attrs.empty) then "" else {
+    txt = [ if (attrs.classes.isNil) then [] else ["class={" + attrs.classes.map(normalizeId).join(",") + "}"],  // so block goes first
+            if (attrs.name=="") then [] else ["id=" + attrs.name],
+            if (attrs.label=="") then [] else ["label={" + attrs.label.escapeEntity.texText + "}"],
+            if (attrs.elem=="") then [] else ["elem={" + attrs.elem.escapeEntity.texText + "}"],
+            attrs.keyvals.filter(nosuppressKey).map(fun(kv) { 
+              kv.fst.normalizeId + "={" + kv.snd.normalizeVal + "}" 
+            }),          
+          ].concat.join(",") 
+    if (txt=="") then "" else "[" + txt + "]"
+  }
+}
+
+
+function nosuppressKey( kv : (string,string) ) : bool {
+  key = kv.fst
+  (key != "source" && !(key.startsWith("html-") || key.startsWith("css-")))
+}
+
+function normalizeVal( v : string ) : string {
+  match(v.find(rxPerc)) {
+    Just(cap) -> "0." + cap.groups[1] + "\\linewidth"
+    Nothing -> match(v.find(rxPixels)) {
+      Just(cap) -> cap.groups[1] + "\\cssPixel"
+      Nothing   -> v.escapeEntity.texText.replaceAll(regex("\n"),"\\\\")
+    }
+  }
+}
+val rxPerc = regex(@"\s*(\d\d?)%\s*")
+val rxPixels = regex(@"\s*(\d+(?:\.\d+)?)px\s*")
+
+function capitalize( s : string ) : string {
+  s.substr(0,1).toUpper + s.substr(1)
+}
+
+
+function texCmdPlain( cmd : string, body : string, pre : string = "md" ) : string {
+  "\\" + pre + cmd.normalizeCmd.capitalize + "{" + body + "}"
+}
+
+function texEnv( env : string, body : string, attrs : attrs = attrsNone ) : string {
+  texEnvPlain(env,body,attrs)
+}
+
+function texEnvPlain( env : string, body : string, attrs : attrs ) : string {
+  envName = (if (attrs.texelem != "") then attrs.texelem else ("md" + env.normalizeCmd.capitalize))
+  "\\begin{" + envName + "}" + attrs.texAttrsX + "%\n" +
+    body.trimRight + "%\n" +
+    "\\end{" + envName + "}%\n"
+}
+
+function texClassName( attrs : attrs, def : string ) : (string,attrs) {
+  name = attrs.elementName(def)
+  (name.normalizeCmd.capitalize,attrs(classes=attrs.classes.filter(fun(c){ c != name })))    
+}
+
+/* --------------------------------------
+  Entities 
+---------------------------------------- */
+
+function normalizeCmd( cmd : string ) {
+  cmd.replaceAll(rxCmdSpecial,"").replaceAll(rxDigits) fun(cap) {
+    list(1,cap.matched.parseInt.maybe(0,id)).map(fun(i) { "x" }).join
+  }
+}
+val rxDigits = regex(@"\d+")
+val rxCmdSpecial = regex(@"[^a-zA-Z0-9]")
+
+
+/* --------------------------------------
+  Title 
+---------------------------------------- */
+public function fmtTexTitle(context : inlineContext, titleinfo : titleinfo ) : string {
+  [@"\mdTitle{" + context.formatInline(titleinfo.title) + "}",
+   if (titleinfo.subtitle=="") then "" else @"\mdSubtitle{" + context.formatInline(titleinfo.subtitle) + "}",
+   titleinfo.authors.map(fun(author) {
+     @"\mdAuthor{" + context.formatInline(author.name) + "}{" + 
+                      context.formatInline(author.address) + "}{" + 
+                      context.formatInline(author.email) + "}{" +
+                      context.formatInline(author.note) + "}"
+   }).join("\n"),
+   @"\mdMaketitle{" + context.formatInline(titleinfo.note) + "}",""].join("\n")
+}
+
+
+
+/* --------------------------------------
+  Full header 
+---------------------------------------- */
+public function fmtTexFull(body : string, options : options, metadata : dict<string> ) : string {
+  fmtTexFullX(body,options,metadata,False)
+}
+
+public function fmtTexMathFull( requireDvi : bool, body : string, options : options ) : string {
+  fmtTexFullX(body,options,dict(), requireDvi )
+}
+
+function fmtTexFullX(body : string, options : options, metadata : dict<string>, snippets : bool = False) : string 
+{
+  function expand(s) { s.expandKeys(metadata) }
+
+  pkgs = (options.packages.expand + (if (snippets) then "" else options.packagesx.expand)).splitPaths 
+  [fmtOptArg(@"\documentclass", options.docClass.expand, ext = ".cls" ),
+   "% generated by Madoko, version " + version,
+   if (snippets) then @"\newcommand\mathmode{true}" else "",
+   pkgs.map(fun(pkg) { 
+      match (pkg.find(rxTexFile)) {
+        Just -> {
+          log("filesRefer", changeExt(pkg,".tex") );
+          @"\input{" + pkg + "}"
+        }
+        Nothing -> fmtOptArg(@"\usepackage",pkg,snippets)
+      }
+    }).join("\n"),
+   options.texHeader.expand,
+   if (snippets) then "" else options.texHeaderx.expand,
+   @"\begin{document}",
+   //(if (options.title=="") then "" else
+   //   "\\title{" + texText(options.title.expand) + "}\n"),
+   body, 
+   @"\end{document}",""
+   ].join("\n")
+}
+
+val rxTexFile = regex(@"^[^\n\r\[\]]+?\.tex$",ignoreCase=True)
+
+function fmtOptArg( pre:string, pkg : string,  snippets : bool = False, ext : string = ".sty" ) : string 
+{
+  pre + (match(pkg.find(rxPkgOpt)) {
+    Just(cap) -> {
+      log("filesRefer", changeExt(cap.groups[2],ext) );
+      (if (cap.groups[1] != "") then "[" + cap.groups[1] + "]" else "") + 
+        "{" + cap.groups[2] + "}"
+    }
+    Nothing  -> {
+      log("filesRefer", changeExt(pkg.trim,ext) )
+      "{" + pkg.trim + "}"
+    }
+  })
+} 
+
+val rxPkgOpt = regex(@"^\s*(?:\[(.*?)\]\s*)?([^\*]+)\s*(?:\*\s*)?$")
