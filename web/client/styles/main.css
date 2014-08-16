@@ -1,0 +1,857 @@
+/*---------------------------------------------------------------------------
+  Copyright 2013 Microsoft Corporation.
+ 
+  This is free software; you can redistribute it and/or modify it under the
+  terms of the Apache License, Version 2.0. A copy of the License can be
+  found in the file "license.txt" at the root of this distribution.
+---------------------------------------------------------------------------*/
+
+/*
+notes:
+  When using "calc" we give a non-calc argument first to support browsers
+  that do not support calc expressions.
+*/
+
+html,body,#main {
+  height: 100%;
+  padding: 0pt;
+  margin: 0pt;
+}
+
+
+/* Colors */
+#main, .spinner.spin {
+  background-color: white;  
+}
+.output {
+  background-color: white;
+  border-style: solid;
+}
+.header-bar, .output {
+  border-color: silver;
+  border-width: 1px;
+}
+.view {
+  background-color: white;
+}
+
+.theme-dark .app-body {
+  background-color: white;      
+}
+.theme-dark #main,
+.theme-dark .spinner.spin, 
+.theme-dark .output,
+.theme-dark .header-bar  {
+  background-color: #135;
+  border-style: none;
+  color: white;
+}
+.theme-dark .header-bar .popup div {
+  color: black;
+}
+.theme-dark .header-bar .popup div .button:hover {
+  background-color: Gainsboro;
+}
+
+.theme-dark .monaco-editor.vs .clnr {
+  color: #666;
+}
+
+.theme-dark .popup:hover,
+.theme-dark .popup>.button:hover,
+.theme-dark .header-bar a:hover,
+.theme-dark .header-bar .button:hover {
+  background-color: #357;
+}
+
+#edit-select-directory {
+  display: none;
+}
+
+/* Application panes */
+#main {
+  padding: 0em 0.25em;
+}
+
+.app-body {
+  height: calc(100% - 3.3em);
+}
+
+.header-bar {
+  height: 1.5rem;
+  margin: 0pt;
+  padding: 0pt;
+  font-family: "Segoe UI";
+}
+
+.app-header.header-bar {
+  padding-top: 0.2rem;
+  padding-bottom: 0.1rem;
+}
+
+.pane {
+  height: 100%;
+  width: 49%;
+  transition: width 1s;
+}
+
+.pane-content {
+  height: 100%;
+}
+
+.view-normal .pane.left {
+  width: calc(53%);
+}
+.view-normal .pane.right {
+  width: calc(47%);
+}
+.view-wide .pane.right, .view-narrow .pane.left {  
+  width: 70%;
+}
+.view-narrow .pane.right, .view-wide .pane.left {
+  width: 30%;
+}
+
+.pane.right {
+  float: right;
+}
+
+.pane.left {
+  float: left;
+}
+
+
+/* header & footer */
+
+.header-bar img {
+  height: 1em;
+  vertical-align: -0.1em;
+}
+
+.header-bar .right {
+  float: right;
+}
+
+#main .header-bar .right img {
+  margin: 0em 0.2em;
+}
+
+.app-footer img {
+  height: 1.4em;
+  vertical-align: -0.2em;
+}
+
+#main .app-footer {
+  font-size: small;
+  text-align: right;
+}
+
+.ms-notice {
+  font-size: x-small;
+}
+
+.app-footer a {
+  color: white;
+  text-decoration: none;
+}
+
+
+
+.app-footer a.external {
+  text-decoration: underline;
+}
+
+.app-footer #view-message {
+  float: left;
+  text-align: left;
+  margin-left: 0.25em;
+  margin-top: 0.15em;
+  width: 50%;
+}
+
+/* Main elements in panes */
+
+#editor {
+  height: 100%;
+}
+
+.view {
+  height: 100%;
+  width: 100%;
+  border: none;
+  overflow: scroll;
+}
+
+#console-out {
+  overflow: scroll;
+  font-size: 8pt;
+  padding: 0.5rem;
+  transition: height 0.8s;
+  height: calc(100% - 1rem);
+  color: black;
+  white-space: nowrap;  
+}
+
+#console-out a {
+  color: blue;
+}
+
+#console-out a:hover {
+  color: blue;
+  background-color: Gainsboro;
+}
+
+/* buttons */
+.button {
+  padding: 0em 0.2em;
+}
+
+.button:hover {
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: Gainsboro;
+}
+
+.button.disable:hover {
+  background-color: white;
+}
+
+.button:active {
+  background-color: Gray;
+}
+
+
+/* menus */
+
+.menu hr {
+  margin-top: 0.2em;
+  margin-bottom: 0.25em;
+}
+
+.menu div {
+  padding: 0.1em 0em;
+}
+
+.menu div .icon, .menu div input {
+  display: inline-block;
+  width: 1.75em;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+} 
+
+#icon-disconnect {
+  visibility: hidden;
+  height: 0.5em;
+  margin-left: -0.3em;
+  vertical-align: 0.35em;
+  margin-right: -0.3em;
+ }
+
+/* File items */
+
+.disable, .file.generated, .file.image {
+  color: #AAA;
+}
+
+#edit-select-header {
+  padding-left: 0.25em;
+}
+
+#edit-select-header .folder {
+  padding-right: 0.15em;
+}
+
+#edit-select-header .disable {
+  color: #888;
+}
+
+.theme-dark #edit-select-header .disable {
+  color: #BBB;
+}
+
+#edit-select-directory img {
+  float: right;
+}
+
+.file.main {
+  font-weight: bold;
+}
+
+.file.hide {
+  display: none;
+}
+
+.file-size {
+  display: inline-block;
+  float: right;
+  font-size: x-small;
+  padding-top: 0.5em;
+}
+
+.file-share {
+  display: inline-block;
+  float: right;  
+  text-decoration: none;
+  padding-right: 0.5em;
+  color: inherit;
+}
+
+a.file-share:hover {
+  background-color: Gainsboro !important;
+  text-decoration: underline;
+}
+
+/* Generic */
+
+.hide {
+  display: none;
+}
+
+.boxed {
+  border: 1px solid black !important;
+}
+
+div.boxed {
+  padding: 1.4px;
+}
+
+
+/* Editor Header */
+#document {
+  padding-right: 0.2em;
+}
+
+#edit-select {
+  width: 40%;
+}
+
+#sync-spinner, #export-spinner {
+  float: right;
+  margin-top: 0.2em;  
+}
+
+
+#export-spinner {
+  height: 1em;
+}
+
+
+#save-folder {
+  width: 11em;
+  color: DimGray;
+}
+
+#help .notice {
+  font-size: small;
+  color: DimGray;
+}
+
+#help-content a img {
+  height: 0.5em;
+  margin-right: 0.1em;
+  margin-left: 0.1em;
+  vertical-align: 0.1em;
+}
+
+#help-content>a {
+  display: block;
+  color: black;
+  text-decoration: none;
+}
+
+#help-content>a:hover {
+  background-color: Gainsboro;
+}
+
+
+.msg-error, .msg-exception {
+  color: red;
+}
+.msg-warning {
+  color: maroon;
+}
+
+.msg-section .msg-status {
+  color: green;
+}
+
+.msg-section {
+  border-bottom: 1px dotted Gainsboro;
+  border-radius: 0pt !important;
+  padding-bottom: 0.2em;
+}
+
+.msg-section:hover {
+  background-color: Gainsboro;
+}
+
+.msg-time {
+  display: inline-block;
+  float: right;
+  color: #888;
+}
+
+#status {
+  padding-left: 0.5ex;
+}
+
+.menu-label {
+  display: inline-block;
+  width: 3.5em;
+}
+
+.color-box {
+  display:inline-block;
+  border:1px solid black; 
+  height: 0.7em; 
+  width:0.7em; 
+  vertical-align:-0.4em;
+}
+
+
+/* Monaco token classes */
+.xlatex-error-line {
+  background-color: lightblue;
+}
+
+.monaco-editor .glyph-error.outdated {
+  background-color: orange !important;
+}
+
+.xlatex-error {
+  background-color: red;
+  width: 5px !important;
+  left: 2px;
+}
+
+.monaco-editor .token.code {
+  color: purple;
+}
+.monaco-editor .token.code.keyword {
+  color: navy;
+}
+.monaco-editor .token.metadata {
+  color: navy;
+}
+.monaco-editor .token.string.escape {
+  color: gray;
+}
+
+.monaco-editor.vs-dark .token.code {
+  color: #897;
+}
+.monaco-editor.vs-dark .token.code.keyword {
+  color: #B5CEA8;
+}
+.monaco-editor.vs-dark .token.metadata {
+  color: #BD5050;
+}
+.monaco-editor.vs-dark .token.string.escape {
+  color: #CE9178;
+}
+.monaco-editor, .monaco-editor .lines-decorations {
+  background-color: #FFFAF4;
+}
+
+.monaco-editor .line-numbers {
+  background-color: Gainsboro;
+}
+
+/* status icons */
+
+#users-status img {
+  vertical-align: -0.5ex;
+  visibility: hidden;
+}
+
+#users-status.users-read img#icon-users,
+#users-status.users-write img#icon-users-edit {
+  visibility: visible;
+}
+
+
+/* Generic Spinner */
+
+.spinner, .gspinner {
+  visibility: hidden;
+}
+
+.spinner.spin, .gspinner.spin {
+  visibility: visible;
+}
+
+.spinner.spin {
+  -webkit-animation: spinner-rotate 2s infinite linear;
+  animation: spinner-rotate 2s infinite linear;
+}
+
+
+@-webkit-keyframes spinner-rotate {
+  from { -webkit-transform:rotate(0deg); }
+  to   { -webkit-transform:rotate(360deg); }
+}
+@keyframes spinner-rotate {
+  from { transform:rotate(0deg); }
+  to   { transform:rotate(360deg); }
+}
+
+
+/* Generic Popup */
+
+.popup {
+  position: relative;
+  display: inline-block;
+}
+
+.popup > div {
+  transition: height 0.8s; 
+}
+
+.popup > div {
+  display: none;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  top: 1.25rem;
+  left: 0;
+  background-color: white;
+  max-height: 20rem;
+  overflow-y: auto;
+  padding: 0.5ex;
+}
+
+.popup:hover > div, 
+.popup.hover > div {
+  display: block;
+}
+
+
+/* Widths of popup content */
+#edit-select-content {
+  width: 70%;
+}
+
+
+#help-content,
+#menu-settings-content,
+#document-content {
+  width: 20em;
+}
+
+#help-content,
+#menu-settings-content {
+  left: -18.5em;
+}
+
+#help {
+  margin-right: 0.5em;
+}
+
+#console {
+  width: 100%;
+  top: -20rem;
+  height: 20rem;
+  padding: 0pt;
+}
+
+
+/* --------------------------------------------
+  Modal dialog
+----------------------------------------------*/
+
+div.modal {
+  display: none; 
+  position: absolute; 
+  left: 25%; 
+  top: 25%; 
+  border: 2px solid #135;
+  background-color: white;
+  width: 50%;
+  height: 50%;
+  z-index: 100; 
+
+  font-family: "Segoe UI", sans-serif;
+}
+
+.modal .app-content {
+  padding: 0.5em 1em;
+}
+
+#fade {
+  display: none;  
+  position: absolute; 
+  left: 0%; 
+  top: 0%; 
+  background-color: #135;
+  -moz-opacity: 30; 
+  opacity: .30;
+  filter: alpha(opacity=30);
+  width: 100%;
+  height: 100%;
+  z-index: 90; 
+}
+
+.modal .app-body {
+  height: calc(100% - 6rem);
+  width: 100%;
+  overflow: auto;
+}
+
+.modal .header-bar {
+  padding: 0.7rem 1em 0.3rem 1em !important;
+  height: 2rem;
+  white-space: nowrap;
+}
+
+.modal .header-bar img {
+  height: 1.5em;
+  vertical-align: bottom;
+}
+
+.modal .app-content {
+  padding: 0.5em 1em;
+}
+
+.modal .app-footer {
+  text-align: right;
+  padding-top: 0.5em;
+}
+
+.modal .button {
+  display: inline;
+  border: 1px white solid;
+  border-radius: 5px;
+  padding-bottom: 0.2em;
+  margin: 0em 0.25em;
+}
+
+
+/* ----------------------------------------------------------
+   File Picker
+-----------------------------------------------------------*/
+
+/* menus */
+#picker #remote-menu {
+  width: 10em;
+}
+
+#picker .menu .button {
+  display: block;
+}
+
+#picker .menu .button:hover {
+  background-color: Gainsboro !important;
+}
+
+
+/* view */
+
+#picker .message {
+  display: none;
+}
+
+#picker #remotes {
+  margin-right: 0.5em;
+}
+
+#picker.command-alert #remotes,
+#picker.command-push #remotes,
+#picker.command-message #remotes,
+#picker.command-template #remotes {
+  display: none;
+}
+
+#picker #listing, #picker #templates {
+  display: none;
+}
+
+#picker.command-open #listing,
+#picker.command-save #listing,
+#picker.command-push #listing,
+#picker.command-new #listing,
+#picker.command-template #templates {
+  display: block;
+}
+
+/* folder name */
+
+#picker #folder-name {
+  display: none;
+  max-width: 80%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+#picker.command-open #folder-name,
+#picker.command-save #folder-name,
+#picker.command-push #folder-name,
+#picker.command-new #folder-name,
+#picker.command-message #folder-name,
+#picker.command-template #folder-name,
+#picker.command-alert #folder-name {
+  display: inline-block;
+}
+
+#picker .dir:hover {
+  background-color: #357;
+  cursor: pointer;
+}
+
+#picker .dirsep {
+  color: Gainsboro;
+}
+
+#picker #file-name {
+  width: 14em;
+  display: none;
+  font-size: 1em;
+  vertical-align: 0.2em;
+}
+
+#picker.command-save #file-name,
+#picker.command-push #file-name, 
+#picker.command-new #file-name {
+  display: inline;
+}
+
+/* items */
+
+div.item {
+  display: inline-block;
+  width: calc(50% - 3em);
+  padding: 0.2em 0.5em 0.2em 0.5em;
+}
+
+div.item:hover {
+  background-color: Gainsboro;
+  cursor: pointer;
+}
+
+.item-icon {
+  height: 1.5em;
+  width : 1.5em;
+  margin: 0em 0.5em 0em 0em;
+  vertical-align: middle;
+}
+
+#templates .item-icon {
+  height: 4em;
+  width: 4em;
+}
+
+.item-select {
+  background-color: white;
+}
+
+.item.selected,
+.item.selected:hover {
+  background-color: #8AC;
+}
+
+.item-file.disabled {
+  color: #AAA;
+}
+
+.item.disabled input {
+  visibility: hidden;
+}
+
+/* buttons */
+#picker .button {
+  display: none;
+}
+
+#picker .app-content .button {
+  color: white;
+  border-color: black;
+  background-color: #135;
+}
+#picker .app-content .button:hover {
+  background-color: #357;
+}
+
+#picker.command-login #message-login, 
+#picker.command-connect #message-connect,
+#picker.command-alert #message-alert,
+#picker.command-message #message-message,
+#picker.command-template #message-template {
+  display: block;
+}
+
+#picker.command-login #button-login,
+#picker.command-alert #button-discard,
+#picker.command-open #button-open,
+#picker.command-save #button-save,
+#picker.command-new #button-new,
+#picker.command-push #button-push,
+#picker.command-template #button-new,
+#picker #button-logout,
+#picker #button-cancel {
+  display: inline;
+}
+
+#picker.command-login #login-info,
+#picker.command-alert #login-info,
+#picker.command-message #login-info {
+  display: none;
+}
+
+#remote-down {
+  height: 0.6em;
+  margin-left: -0.4em;
+}
+
+#login-info {
+  float: left;
+  font-size: small;
+}
+
+#message-login, #message-connect, #message-alert, #message-message, #message-template {
+  text-align: center;
+  width: 100%;
+}
+
+#picker #remote-local {
+  display: none;
+}
+
+#picker.command-login-new #remote-local, 
+#picker.command-new #remote-local {
+  display: block;
+}
+
+#picker #header-logo {
+  display: none;
+}
+
+#picker.command-template #header-logo,
+#picker.command-alert #header-logo  {
+  display: inline;
+}
+
+
+/* hover box */
+.hoverbox {
+  position: relative;
+}
+
+.hoverbox-content {
+  display: none;
+  position: absolute;
+  z-index: 100;
+  left: calc(100% - 5em);
+}
+
+.hoverbox:hover .hoverbox-content {
+  display: block;
+}
+
+.hoverbox-content img {
+  height: auto;
+  width: auto;
+  max-width: 5em;
+  max-height: 5em;
+}
