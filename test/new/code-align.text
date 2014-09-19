@@ -1,0 +1,83 @@
+title		: definition lists
+author	   	: Daan
+author note : &time;
+Doc Class   : article
+
+~Pre        : replace=//->/\(2:&rarr;\)//\\(?![()])/\(&lambda;\)//g 
+~Pre,~Code  : .pretty
+.pretty     : replace="/_(?=[a-zA-Z])/\(&lowline;\)/g" replace="/([a-zA-Z])(\d+)\b/\(\1~\2~\)/g"
+
+<style>
+.xpretty td {
+  border: 1px solid black;
+}
+.xpretty .token {
+  color: black !important;
+}
+</style>
+
+
+
+[TITLE]
+[TOC]
+
+Here is some `haskell code do`{language=haskell}, and here some more:
+
+``` haskell  
+data Exp   =  Number    Int
+           |  Add       Exp Exp
+           |  Subtract  Exp Exp
+           |  Multiply  Exp Exp
+           |  Divide    Exp Exp
+           |  Variable  String        -- added
+           deriving (Eq)
+
+substitute1  :: (String, Int) -> Exp -> Exp
+substitute1  (var, val) exp = subst exp where
+  subst (Number i)       =  Number i
+  subst (Add a b)        =  Add (subst a) (subst b)
+  subst (Subtract a b)   =  Subtract (subst a) (subst b)
+  subst (Multiply a b)   =  Multiply (subst a) (subst b)
+  subst (Divide a b)     =  Divide (subst a) (subst b)
+  subst (Variable name)  =  if var == name
+                             then Number val
+                             else Variable name          
+```          
+
+``` Html 
+<span>  test</span>
+<span>  aligned</span> &amp;
+```
+
+``` Haskell  
+data Exp   =  Number    Int
+           |  Add       Exp Exp
+           |  Subtract  Exp Exp
+           |  Multiply  Exp Exp
+           |  Divide    Exp Exp
+           |  Variable  String        -- added
+           deriving (Eq)
+```
+
+Scan:
+
+``` Haskell 
+scanr1        :: (a -> a -> a) -> [a] -> [a]
+scanr1 f xxs  =  case xxs of 
+                   x:xs ->  case xs of 
+                              []  ->  [x] 
+                              _   ->  let  qs = scanr1 f xs 
+                                      in   case qs of 
+                                            q:_ -> f x q : qs
+```          
+
+Rep-min problem:
+
+``` Haskell
+rep_alg         =  (  \_          -> \m ->  Leaf m
+                   ,  \lfun rfun  -> \m ->  let  lt = lfun m
+                                                 rt = rfun m
+                                            in   Bin lt rt "hi"
+                   )
+replace_min’ t  =  (cata_Tree rep_alg t) (cata_Tree min_alg t)
+```
