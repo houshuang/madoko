@@ -1,0 +1,101 @@
+{
+  "displayName": "Dafny",
+  "name":        "dafny",
+  "mimeTypes":   ["text/x-dafny"],
+    
+  "lineComment":      "//",
+  "blockCommentStart": "/*",
+  "blockCommentEnd":   "*/",
+
+  "keywords": [
+    "class","trait","datatype","codatatype","newtype","type","iterator",
+    "function","predicate","copredicate",
+    "var","method","constructor","lemma","colemma",
+    "ghost","static","abstract","async",
+    "module","import","default","as","opened",
+    "include",
+    "extends","refines","returns","yields",
+    "assert","assume","break","then","else","if","label","return","yield","await",
+    "while","print","where",
+    "old","forall","exists","new","calc","modify","in","this","fresh",
+    "match","case","false","true","null"
+  ],
+
+  "extraKeywords": [
+  ],
+
+  "verifyKeywords": [
+    "requires","ensures","modifies","reads","free","invariant","decreases"
+  ],
+
+  "extraVerifyKeywords": [
+  ],
+
+  "types": [
+    "bool","int","nat","real",
+    "set","multiset","seq","map",
+    "object","array","array2","array3"
+  ],
+
+  "extraTypes": [
+  ],
+
+
+  "brackets": [
+    ["{","}","delimiter.curly"],  
+    ["[","]","delimiter.square"],  
+    ["(",")","delimiter.parenthesis"] 
+  ],
+
+  
+  "escapes": "\\\\(?:[abfnrtv\\\\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})",
+
+  "tokenizer": {
+    "root": [
+      
+      ["array([2-9]\\d*|1\\d+)", "type.keyword" ],
+      ["[a-zA-Z'_\\?\\\\][\\w'\\?\\\\]*", { "cases": {
+          "@keywords": "keyword",
+          "@extraKeywords": "keyword",
+          "@verifyKeywords": "constructor.identifier",
+          "@extraVerifyKeywords": "constructor.identifier",
+          "@types"   : "type.keyword",
+          "@extraTypes": "type.keyword",
+          "@default" : "identifier" }}],            
+      [":=","keyword"],
+      
+      
+      { "include": "@whitespace" },
+      
+      ["[{}()\\[\\]]", "@brackets"],
+      ["[;]", "delimiter"],
+      
+      ["0{2,}", "invalid.number" ],
+      ["0[xX][A-Fa-f0-9]+",  "number.hex"],
+      ["[0-9]+", "number.dec"],
+      
+      ["\"([^\"\\\\]|\\\\.)*$", "string.invalid" ],  
+      ["\"",  "string", "@string" ]
+    ],
+
+    "whitespace": [
+      ["[ \\t\\r\\n]+", "white"],
+      ["\\/\\*",       "comment", "@comment" ],
+      ["\\/\\/.*$",    "comment"]
+    ],
+
+    "comment": [
+      ["[^\\/*]+", "comment" ],
+      ["\\/\\*", "comment", "@push" ],    
+      ["\\*/",    "comment", "@pop"  ],
+      ["[\\/*]",   "comment" ]
+    ],  
+
+    "string": [
+      ["[^\\\\\"]+",  "string"],
+      ["@escapes", "string.escape"],
+      ["\\\\.",      "string.escape.invalid"],
+      ["\"",        "string", "@pop" ]
+    ]
+  }
+}

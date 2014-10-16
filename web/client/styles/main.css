@@ -1,0 +1,1302 @@
+/*---------------------------------------------------------------------------
+  Copyright 2013 Microsoft Corporation.
+ 
+  This is free software; you can redistribute it and/or modify it under the
+  terms of the Apache License, Version 2.0. A copy of the License can be
+  found in the file "license.txt" at the root of this distribution.
+---------------------------------------------------------------------------*/
+
+/*
+notes:
+  When using "calc" we give a non-calc argument first to support browsers
+  that do not support calc expressions.
+*/
+
+html,body,#main {
+  height: 100%;
+  padding: 0pt;
+  margin: 0pt;
+}
+
+
+/* Colors */
+#main, .spinner.spin {
+  background-color: white;  
+}
+.output {
+  background-color: white;
+  border-style: solid;
+}
+.header-bar, .output {
+  border-color: silver;
+  border-width: 1px;
+}
+.view {
+  background-color: white;
+}
+
+.theme-dark .app-body {
+  background-color: white;      
+}
+.theme-dark #main,
+.theme-dark .spinner.spin, 
+.theme-dark .output,
+.theme-dark .header-bar  {
+  background-color: #135;
+  border-style: none;
+  color: white;
+}
+.theme-dark .header-bar .menu {
+  color: black;
+}
+.theme-dark .header-bar .menu .button:hover {
+  background-color: Gainsboro;
+}
+
+.theme-dark .monaco-editor.vs .clnr {
+  color: #666;
+}
+
+.theme-dark .popup:hover,
+.theme-dark .popup>.button:hover,
+.theme-dark .header-bar a:hover,
+.theme-dark .header-bar .button:hover {
+  background-color: #357;
+}
+
+#edit-select-directory {
+  display: none;
+}
+
+/* Application panes */
+#main {
+  padding: 0em 0.25em;
+}
+
+.app-body {
+  height: calc(100% - 3.2rem);
+}
+
+.header-bar {
+  height: 1.4rem;
+  margin: 0pt;
+  padding: 0pt;
+}
+
+.header-bar, .toolbar, modal {
+  font-family: "Segoe UI", Segoe, "DejaVu Sans", "Trebuchet MS", sans-serif;
+}
+
+.app-header.header-bar {
+  padding-top: 0.2rem;
+  padding-bottom: 0.1rem;
+}
+
+.app-footer.header-bar {
+  padding-top: 0.1rem;
+}
+
+.pane {
+  height: 100%;
+  width: 49%;
+  xtransition: width 1s;
+}
+
+.pane-content {
+  height: 100%;
+  position: relative;
+}
+
+.pane.left {
+  width: calc(53%);
+}
+.pane.right {
+  width: calc(47%);
+}
+
+#main[data-view=wide] .pane.right, #main[data-view=narrow] .pane.left {  
+  width: 70%;
+}
+#main[data-view=narrow] .pane.right, #main[data-view=wide] .pane.left {
+  width: 30%;
+}
+
+.pane.right {
+  float: right;
+}
+
+.pane.left {
+  float: left;
+}
+
+
+/* header & footer */
+
+.header-bar img {
+  height: 1em;
+  vertical-align: -0.1em;
+}
+
+.header-bar .right {
+  float: right;
+}
+
+#main .header-bar .right img {
+  margin: 0em 0.2em;
+}
+
+img#console-ok {
+  height: 1.4em;
+  vertical-align: -0.2em;
+}
+
+#main .app-footer {
+  font-size: small;
+}
+
+.ms-notice {
+  float     : right;
+  font-size : x-small;
+  margin-top: 0.1em;
+}
+
+#madokoDigest {
+  padding-left: 1em;
+  color: Dimgray;
+}
+
+.app-footer a.external {
+  text-decoration: underline;
+}
+
+.app-footer a {
+  color: white;
+  text-decoration: none;
+}
+
+.app-footer #view-message {
+  margin-left: 0.25em;
+}
+
+.app-footer #status {
+  width: 50%;
+}
+
+/* Main elements in panes */
+
+#editor {
+  height: 100%;
+}
+
+.view {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+#console-out {
+  overflow: scroll;
+  font-size: 8pt;
+  padding: 0.5rem;
+  transition: height 0.8s;
+  height: calc(100% - 1rem);
+  color: black;
+  white-space: nowrap;  
+}
+
+#console-out a, #console-out .save-link {
+  color: blue;
+}
+
+#console-out a:hover, #console-out .save-link {
+  color: blue;
+  background-color: Gainsboro;
+}
+
+span.save-link {
+  text-decoration: underline;
+}
+
+span.save-link:hover {
+  cursor: pointer;
+}
+
+/* buttons */
+.button {
+  padding: 0em 0.2em;
+}
+
+.button:hover {
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: Gainsboro;
+}
+
+.button.disable:hover {
+  background-color: white;
+}
+
+.button:active {
+  background-color: Gray;
+}
+
+
+/* menus */
+
+.menu hr {
+  margin-top: 0.3em;
+  margin-bottom: 0.2em;
+  border: none;
+  border-top: solid #AAA 1px;
+}
+
+.menu div {
+  padding: 0.1em 0em;
+}
+
+.menu div .icon, .menu div input {
+  display: inline-block;
+  width: 1.75em;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+} 
+
+#icon-disconnect {
+  visibility: hidden;
+  height: 0.5em;
+  margin-left: -0.3em;
+  vertical-align: 0.35em;
+  margin-right: -0.3em;
+}
+
+.disconnected #icon-disconnect {
+  visibility: visible;
+}
+
+#signin, #signout, #local-message, #http-message {
+  display: none;
+}
+
+.remote-local #local-message,
+.remote-http #http-message {
+  display: block;
+  font-size: smaller;
+}
+
+.disconnected #signin {
+  display: block;
+}
+
+.connected #signout {
+  display: block;
+}
+
+#connection {
+  padding: 0em 0.4em;
+}
+
+#toolbox {
+  padding: 0em 0.5em;
+}
+
+.theme-dark #toolbox .menu {
+  color: #135;
+  border-color: #135;
+  box-shadow-color: #135;
+}
+
+#toolbox>div>div.button {
+  display: inline-block;
+  color: #135;
+}
+
+#toolbox .button {
+  padding: 0em 0.25em;
+}
+
+#toolbox>div>div.options>div {
+  width: 9em;
+}
+
+#toolbox #tool-color-content {
+  width: 7.75em;
+}
+
+#toolbox #tool-custom-content,
+#toolbox #tool-include-content,
+#toolbox #tool-math-content,
+#toolbox #tool-styling-content,
+#toolbox #tool-metadata-content {
+  width: 12em;
+  max-height: 32em;
+}
+
+#toolbox #tool-reference-content,
+#toolbox #tool-cite-content,
+#toolbox #tool-font-content {
+  width: 12em;
+  white-space: nowrap;
+}
+
+#toolbox #tool-symbol .menu {
+  width: 17em;
+}
+
+#toolbox .symbol {
+  display: inline-block;
+  width: 1em;
+}
+
+#toolbox .help {
+  float: right;  
+  padding: 0em 0.25em;
+  color: Gainsboro;
+}
+
+#toolbox .button:hover>.help {
+  color: black;
+}
+
+#toolbox .help:hover {
+  background-color: #AAA !important;  
+}
+
+#toolbox .named ~ .named {
+  border-left: 1px solid #135;
+}
+
+#toolbox div.menu div.menu, #toolbox .named {
+  font-size: small;
+}
+
+#toolbox .colorbox {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border: 1px solid black;  
+}
+
+#toolbox .red { background-color: red; }
+#toolbox .lime { background-color: lime; }
+#toolbox .blue { background-color: blue; }
+#toolbox .yellow { background-color: yellow; }
+#toolbox .cyan { background-color: cyan; }
+#toolbox .magenta { background-color: magenta; }
+#toolbox .maroon { background-color: maroon; }
+#toolbox .green { background-color: green; }
+#toolbox .navy { background-color: navy; }        
+#toolbox .olive { background-color: olive; }
+#toolbox .teal { background-color: teal; }
+#toolbox .purple { background-color: purple; }
+#toolbox .orange { background-color: orange; }
+#toolbox .black { background-color: black; }
+#toolbox .gray { background-color: gray; }
+#toolbox .lightgray { background-color: lightgray; }
+#toolbox .white { background-color: white; }
+
+#toolbox .button.icon {
+  display: inline;
+}
+
+/* File items */
+
+.disable, .file.generated, .file.image {
+  color: #AAA;
+}
+
+#edit-select-header {
+  padding-left: 0.25em;
+}
+
+#edit-select-header .folder {
+  padding-right: 0.15em;
+}
+
+#edit-select-header .disable,
+#edit-select-header .file-share {
+  color: #888;
+}
+
+.exported .disable {
+  color: black;
+}
+
+
+.theme-dark #edit-select-header .disable {
+  color: #BBB;
+}
+
+#edit-select-directory img {
+  float: right;
+}
+
+.file.main {
+  font-weight: bold;
+}
+
+.file.hide {
+  display: none;
+}
+
+.shortcut, .file-size, .file-share {
+  display: inline-block;
+  float: right;
+  font-size: x-small;
+  padding-top: 0.5em;
+  color: inherit;
+}
+
+span.shortcut {
+  padding-right: 0.25em;
+}
+
+.file-share {
+  padding-right: 0.5em;
+}
+
+a.file-share:hover {
+  background-color: Gainsboro !important;
+}
+
+
+/* Generic */
+
+.hide {
+  display: none;
+}
+
+.boxed {
+  border: 1px solid !important;
+  border-color: black;
+}
+
+div.boxed {
+  padding: 1.4px;
+}
+
+
+/* Editor Header */
+#document {
+  padding-right: 0.2em;
+}
+
+#edit-select {
+  width: 40%;
+}
+
+#export-spinner {
+  height: 1em;
+}
+
+
+#save-folder {
+  width: 11em;
+  color: DimGray;
+}
+
+#help .notice {
+  font-size: small;
+  color: DimGray;
+}
+
+#help-content a img {
+  height: 0.5em;
+  margin-right: 0.1em;
+  margin-left: 0.1em;
+  vertical-align: 0.1em;
+}
+
+#help-content>a {
+  display: block;
+  color: black;
+  text-decoration: none;
+}
+
+#help-content>a:hover {
+  background-color: Gainsboro;
+}
+
+
+.msg-error, .msg-exception {
+  color: red;
+}
+.msg-warning {
+  color: maroon;
+}
+
+.msg-section .msg-status {
+  color: green;
+}
+
+.msg-section {
+  border-bottom: 1px dotted Gainsboro;
+  border-radius: 0pt !important;
+  padding-bottom: 0.2em;
+}
+
+.msg-section:hover {
+  background-color: Gainsboro;
+}
+
+.msg-time {
+  display: inline-block;
+  float: right;
+  color: #888;
+}
+
+#status {
+  padding-left: 0.5ex;
+}
+
+.menu-label {
+  display: inline-block;
+  width: 3.5em;
+}
+
+#main[data-fontscale=small] #font-small, 
+#main[data-fontscale=medium] #font-medium, 
+#main[data-fontscale=large] #font-large, 
+#main[data-fontscale=x-large] #font-x-large { 
+  text-decoration: underline 
+} 
+
+#main[data-view=full] #editorpane,
+#main[data-view=full] .pinned,
+#main[data-view=full] .app-header,
+#main[data-view=full] .app-footer {
+  display: none !important;
+}
+
+#main[data-view=full] #viewpane {
+  display: block !important;
+  position: absolute;
+  top: 0pt;
+  left: 0pt;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  padding: 0pt;
+  margin: 0pt;
+  overflow: hidden;
+}
+  
+#main[data-view=full] #fullview-header {
+  display: block !important;
+  padding: 0em 0.5em;  
+  transition: height 0.5s;
+}
+
+#fullview-header {
+  display: none;
+}
+
+.header-bar.collapsed {
+  height: 0.4ex;  
+}
+
+.header-bar.collapsed .content {
+  display: none;
+}
+
+.color-box {
+  display:inline-block;
+  border:1px solid black; 
+  height: 0.7em; 
+  width:0.7em; 
+  vertical-align:-0.4em;
+}
+
+
+/* Monaco token classes */
+.monaco-editor .glyph-error.outdated,
+.monaco-editor .glyph-warning.outdated {
+  background-color: orange !important;
+}
+
+.monaco-editor .xline-error {
+  background-color: red;
+  xwidth: 5px !important;
+  xleft: 2px;
+}
+
+.monaco-editor .line-merge {
+  background-color: #7e0000;
+  width: 6px !important;
+  left: 2px;
+}
+
+.monaco-editor .line-merge.merge-change,
+.monaco-editor .line-merge.merge-deletion,
+.monaco-editor .line-merge.merge-conflict {
+  background-color: #7e0000;
+}
+.monaco-editor .line-merge.outdated {
+  background-color: #4b0000;
+}
+
+.monaco-editor .line-merge.merge-insertion {
+  background-color: #007e00;
+}
+.monaco-editor .line-merge.merge-insertion.outdated {
+  background-color: #004b00;
+}
+
+.monaco-editor .line-merge.merge-original {
+  background-color: #00007e;
+}
+.monaco-editor .line-merge.merge-original.outdated {
+  background-color: #00004b;
+}
+
+.monaco-editor .token.code {
+  color: purple;
+}
+
+.monaco-editor .token.comment {
+  color: gray;
+}
+
+.monaco-editor .token.code.latex {
+  xbackground-color: #F4F4F4;
+  xcolor: inherit;
+  color: purple;
+}
+
+.monaco-editor .token.code.latex.keyword,
+.monaco-editor .token.code.latex.special,
+.monaco-editor .token.code.latex.delimiter {
+  color: #801500;
+}
+
+.monaco-editor .token.open, .monaco-editor .token.close {
+  color: inherit;
+}
+
+/*
+.monaco-editor .token.keyword.heading 
+*/
+.monaco-editor .token.link.special {
+  font-weight: bold;
+  color: inherit;
+}
+
+.monaco-editor .token.code.keyword {
+  color: navy;
+}
+.monaco-editor .token.metadata {
+  color: navy;
+}
+.monaco-editor .token.string.escape {
+  color: gray;
+}
+.monaco-editor .token.invalid {
+  border-bottom: Gray dotted 2px;
+}
+
+.monaco-editor.vs-dark .token.code {
+  color: #897;
+}
+.monaco-editor.vs-dark .token.code.keyword {
+  color: #B5CEA8;
+}
+.monaco-editor.vs-dark .token.metadata {
+  color: #BD5050;
+}
+.monaco-editor.vs-dark .token.string.escape {
+  color: #CE9178;
+}
+.monaco-editor, .monaco-editor .lines-decorations {
+  background-color: #FFFAF4;
+}
+
+.monaco-editor.vs .line-numbers {
+  background-color: Gainsboro;
+}
+
+.monaco-editor.font-small {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.monaco-editor.font-large {
+  font-size: 16px;
+  line-height: 21px;
+}
+
+.monaco-editor.font-x-large {
+  font-size: 18px;
+  line-height: 24px;
+}
+
+
+/* status icons */
+#users-status img {
+  vertical-align: -0.5ex;
+  visibility: hidden;
+}
+
+#users-status.users-read img#icon-users,
+#users-status.users-write img#icon-users-edit {
+  visibility: visible;
+}
+
+
+/* Generic Spinner */
+
+.spinner, .gspinner {
+  visibility: hidden;
+}
+
+.spinner.spin, .gspinner.spin {
+  visibility: visible;
+}
+
+
+/* Generic Popup */
+
+.popup {
+  position: relative;
+  display: inline-block;
+}
+
+.popup > div {
+  transition: height 0.8s; 
+}
+
+.popup > div {
+  display: none;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  top: 1.25em;
+  left: 0pt;
+  background-color: white;
+  max-height: 20rem;  
+  padding: 0.5ex;
+  overflow-y: auto;
+}
+
+.popup:hover > div, 
+.popup.hover > div,
+.popup > div.pinned {
+  display: block;
+}
+
+#main[data-theme=vs-dark] .popup > div.pinned {
+  background-color: #BBB;
+}
+
+.pinned .pin, .pinned.moving .unpin, .unpin {
+  display: none;
+}
+
+.pinned.moving .pin, .pinned .unpin {
+  display: inline;
+}
+
+/*
+.content-pinned {
+  visibility: hidden !important;
+}
+
+.content-pinned>div {
+  visibility: visible !important;
+}
+*/
+
+.pinbox {
+  float: right;
+  margin-top: calc(-1ex + 1px);
+  margin-right: calc(-0.5ex + 1px);
+  padding: 0pt;
+}
+
+.pinbox img {
+  padding: 0pt !important;
+  vertical-align:f 0pt;
+  margin: 0pt;
+}
+
+.moving .pinbox,
+.moving .pinbox .button:hover {
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+}
+
+div.pinned.boxed.menu {
+  border-color: #135;
+  box-shadow: 1px 1px 0px;
+}
+
+#toolbox.popup > div,
+#toolbox #tool-symbol.popup > div {
+  overflow-y: visible;
+}
+
+#toolbox .symbol.invisible {
+  border: 1px solid Gainsboro;
+  width: auto;
+}
+
+/* Widths of popup content */
+#edit-select-content {
+  width: 70%;
+}
+
+#document-content {
+  width: 16em;
+}
+
+#help-content,
+#menu-settings-content {
+  width: 20em;
+}
+
+#toolbox #toolbox-content {
+  width: 23em;
+}
+
+#toolbox .menu {
+  width: 22em;
+}
+
+#connection-content {
+  min-width: 8em;
+}
+
+#help-content,
+#menu-settings-content {
+  left: -18.5em;
+}
+
+#help {
+  margin-right: 0.5em;
+}
+
+#console {
+  width: 40rem;
+  top: -20rem;
+  height: 20rem;
+  padding: 0pt;
+}
+
+
+/* --------------------------------------------
+  Modal dialog
+----------------------------------------------*/
+
+div.modal {
+  display: none; 
+  position: absolute; 
+  left: 25%; 
+  top: 25%; 
+  border: 2px solid #135;
+  background-color: white;
+  width: 50%;
+  height: 50%;
+  z-index: 100; 
+
+  font-family: "Segoe UI", sans-serif;
+}
+
+.modal .app-content {
+  padding: 0.5em 1em;
+}
+
+#fade {
+  display: none;  
+  position: absolute; 
+  left: 0%; 
+  top: 0%; 
+  background-color: #135;
+  -moz-opacity: 30; 
+  opacity: .30;
+  filter: alpha(opacity=30);
+  width: 100%;
+  height: 100%;
+  z-index: 90; 
+}
+
+.modal .app-body {
+  height: calc(100% - 6rem + 1px);
+  width: 100%;
+  overflow: auto;
+}
+
+.modal .header-bar {
+  padding: 0.7rem 0.5em 0.3rem 1em !important;
+  height: 2rem;
+  white-space: nowrap;
+}
+
+.modal .header-bar img {
+  height: 1.5em;
+  vertical-align: bottom;
+}
+
+.modal .app-content {
+  padding: 0.5em 1em;
+}
+
+.modal .app-footer {
+  text-align: right;
+  padding-top: 0.5em;
+}
+
+.modal .button {
+  display: inline;
+  border: 1px white solid;
+  border-radius: 5px;
+  padding-bottom: 0.2em;
+  margin: 0em 0.25em;
+}
+
+.modal .button.active {
+  border-width: 2px;
+}
+
+
+/* ----------------------------------------------------------
+   File Picker
+-----------------------------------------------------------*/
+
+/* menus */
+#picker .menu .button {
+  display: block;
+}
+
+#picker .menu .button:hover {
+  background-color: Gainsboro !important;
+}
+
+
+/* view */
+
+#picker .message {
+  display: none;
+}
+
+#picker #listing, #picker #templates {
+  display: none;
+}
+
+#picker.command-open #listing,
+#picker.command-save #listing,
+#picker.command-push #listing,
+#picker.command-new #listing,
+#picker.page-me #listing,
+#picker.page-template #templates {
+  display: block;
+}
+
+#picker.page-template #listing {
+  display: none;
+}
+
+/* folder name */
+
+#picker #folder-name {
+  display: none;
+  max-width: 80%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+#picker.command-open #folder-name,
+#picker.command-save #folder-name,
+#picker.command-push #folder-name,
+#picker.command-new #folder-name,
+#picker.command-connect #folder-name {
+  display: inline-block;
+}
+
+#picker.page-alert #folder-name {
+  display: none;
+}
+
+#picker .dir {
+  text-decoration: underline;
+}
+
+#picker .dir:hover {
+  background-color: #357;
+  cursor: pointer;
+}
+
+#picker .dirsep {
+  color: Gainsboro;
+}
+
+#picker #file-name {
+  width: 11em;
+  display: none;
+  font-size: 1em;
+  vertical-align: 0.2em;
+}
+
+#picker #file-name[readonly] {
+  background-color: Gainsboro;
+}
+
+#picker.command-save #file-name,
+#picker.command-push #file-name, 
+#picker.command-new #file-name {
+  display: inline;
+}
+
+#picker.page-me #file-name,
+#picker.page-alert #file-name {
+  display: none;
+}
+
+#picker.page-template #file-name {
+  display: inline;
+}
+
+
+
+/* items */
+
+div.item {
+  display: inline-block;
+  width: calc(50% - 2em);
+  min-width: calc(50% - 2em);
+  padding: 0.2em 0.5em 0.2em 0.5em; 
+  overflow: hidden;
+  white-space: nowrap;  
+}
+
+div.item:hover {
+  background-color: Gainsboro;
+  cursor: pointer;
+  overflow-x: visible;
+  width: auto;  
+}
+
+div.item.disabled {
+  display: none;
+}
+
+.item-icon {
+  height: 1.5em;
+  width : 1.5em;
+  margin: 0em 0.5em 0em 0em;
+  vertical-align: -0.3em;
+}
+
+
+.item-disconnect {
+  height: 0.5em;
+  width: 0.5em;
+  margin-left: -0.5em;
+  vertical-align: 0.5em;
+  margin-right: 0.25em;
+}
+
+#templates .item-icon {
+  height: 4em;
+  width: 4em;
+  vertical-align: middle;
+}
+#templates div.item {
+  max-height: 4.1em;
+}
+
+#page-me .item-icon {
+  height: 2em;
+  width: 2em;
+}
+#page-me div.item {
+  max-height: 2.1em;
+}
+
+
+
+.item-select {
+  background-color: white;
+}
+
+.item.selected,
+.item.selected:hover {
+  background-color: #8AC;
+}
+
+.item-file.disabled {
+  display: none;
+  color: #AAA;
+}
+
+.item.disabled input {
+  visibility: hidden;
+}
+
+/* buttons */
+#picker-buttons {
+  float: right;
+}
+
+#picker .button {
+  display: none;
+}
+
+#picker .app-content .button {
+  color: white;
+  border-color: black;
+  background-color: #135;
+}
+#picker .app-content .button:hover {
+  background-color: #357;
+}
+
+#picker.command-signin #message-signin, 
+#picker.command-message #message-message,
+#picker.page-alert #message-alert,
+x#picker.page-template #message-template {
+  display: block;
+}
+
+#picker.command-signin #button-signin,
+#picker.command-open #button-open,
+#picker.command-save #button-save,
+#picker.command-new #button-new,
+#picker.command-push #button-push,
+#picker.page-alert #button-discard,
+#picker #button-signout,
+#picker #button-cancel,
+#picker #icon-close {
+  display: inline;
+}
+
+#picker.page-me #button-signin,
+#picker.page-me #button-signout,
+#picker.page-alert #button-new,
+#picker.page-alert #button-save,
+#picker.page-alert #button-open,
+#picker.page-alert #button-signout {
+  display: none;
+}
+
+#picker.page-me #button-new,
+#picker.page-me #button-open,
+#picker.page-me #button-save,
+#picker.page-me #button-push {
+  border-color: #AAA;
+  color: #AAA;
+}
+
+#picker.command-signin #login-info,
+#picker.command-alert #login-info,
+#picker.command-message #login-info {
+  display: none;
+}
+
+#picker #upload {
+  display: none;
+}
+
+#picker.command-upload #upload {
+  display: block;
+}
+
+#picker #upload {
+  margin: 1em 0em;
+  text-align: center;
+}
+
+#picker #dropzone {
+  margin: 1em auto 2em auto;
+  width: 50%;
+  height: 4em;
+  border: dotted 1px black;
+  border-radius: 10px;
+  text-align: center;
+  padding-top: 2em;
+  background-color: Gainsboro;
+}
+
+
+
+#remote-down {
+  height: 0.6em;
+  margin-left: -0.4em;
+}
+
+#login-info {
+  float: left;
+  font-size: small;
+}
+
+#message-signin, #message-connect, #message-alert, #message-message, #message-template {
+  text-align: center;
+  width: 100%;
+}
+
+#picker #remote-local {
+  display: none;
+}
+
+#picker.command-new #remote-local {
+  display: block;
+}
+
+#picker #header-logo {
+  display: inline;
+  padding-right: 0.25em;
+}
+
+#picker #command-name {
+  font-size: larger;
+  padding-right: 0.75em;
+}
+
+
+#picker #icon-close.button {
+  border: none;
+  float: right;
+  margin-top: -0.2em;
+  padding-top: 0.2em;
+  vertical-align: middle;
+}
+
+
+/* hover box */
+.hoverbox {
+  position: relative;
+}
+
+.hoverbox-content {
+  display: none;
+  position: absolute;
+  z-index: 100;
+  left: calc(100% - 5em);
+}
+
+.hoverbox:hover .hoverbox-content {
+  display: block;
+}
+
+.hoverbox-content img {
+  height: auto;
+  width: auto;
+  max-width: 5em;
+  max-height: 5em;
+}
+
+
+body.viewer,
+iframe.viewer {
+  padding: 0pt;
+  margin: 0pt;
+  height: 99%;
+  width: 100%;
+  border: none;
+}
+
+#auth-redirect p {
+  text-align: center; 
+  font-size: large; 
+  margin-top: 1em;
+}
