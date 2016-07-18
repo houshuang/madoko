@@ -364,7 +364,7 @@ public function fmtHtmlFull(html : string, options : options, metadata : dict<st
               log("filesRefer",link);
               log("embed",link);
             }
-            "  <script src=\"" + escape(link) + "\" " + attrs.htmlFormat("script",False) + "></script>\n" 
+            "  <script src=\"" + escape(link) + "\" " + attrs.htmlFormat("script",False) + " async></script>\n" 
           }
         }
       }).join 
@@ -386,7 +386,7 @@ public function fmtHtmlFull(html : string, options : options, metadata : dict<st
        "  });", 
        "</script>",
        "<script type=\"text/javascript\"",
-       "  src=\"" + options.getMathjax.expand.escape + "\">",
+       "  src=\"" + options.getMathjax.expand.escape + "\" async>",
        "</script>\n"
       ].join("\n  ")
    }) +
